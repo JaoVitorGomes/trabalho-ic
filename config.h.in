@@ -1,0 +1,4 @@
+#cmakedefine INPUT_DATA_DIR "@INPUT_DATA_DIR@"
+
+#define TEST_VECTOR_SIZE 100
+
