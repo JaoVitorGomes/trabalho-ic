@@ -1,0 +1,23 @@
+. Nós ponderados            -> MAXIMIZAR
+. Hoteis não valem ponto    -> VALE 0
+. Arestas ponderadas        -> PESO REPRESENTA O TEMPO ENTRE DOIS VÉRTICES
+
+. Cada Tour tem um número FIXO de Trips, provavelmente, o número de trips é fixa durante todo o programa ?
+
+.  Sempre se começa uma Trip de um hotel, e se deve terminar em um hotel.
+
+IDEIAS:
+
+Assim que importar, já pegar quem é o hotel mais próximo de cada nó e salvar essa informação no campo de cada struct do tipo vértice
+
+. GRAFO -> CLASSE
+    unordered_map -> Salva todos os vértices do GRAFO
+    matrix -> Salva a distância entre cada vétice do grafo (é preenchida aos poucos, à medida que nós são escolhidos como base para iniciar um tour)
+    int tam_tour
+    x
+. VÉRTICE -> STRUCT 
+    int ID
+    int hotel_maix_proximo
+    bool ehHotel
+    bool visitado
+    int peso
