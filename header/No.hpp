@@ -3,6 +3,12 @@
 
 #include <forward_list>
 
+
+struct Aresta {
+  int id{};
+  int peso{ 1 };
+};
+
 struct Vertice{
 
     int id;
@@ -13,8 +19,5 @@ struct Vertice{
     bool obrigatorio = false;
 };
 
-struct Aresta {
-  int id{};
-  int peso{ 1 };
-};
+
 #endif

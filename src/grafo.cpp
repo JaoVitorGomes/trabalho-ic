@@ -14,15 +14,16 @@
 #include <utility>
 #include <vector>
 #include <cstddef>
+#include <tuple>
 
 Grafo::Grafo(bool direcionado, std::size_t num_nos, std::size_t num_arestas)
 {
   nos.reserve(num_nos);
 }
 
-void Grafo::adicionarNo(int id, int peso)
+void Grafo::adicionarNo(int id, Vertice vertice)
 {
-  nos.emplace(id, peso);
+  nos.emplace(id, vertice);
 }
 
 bool Grafo::removerNo(int id)

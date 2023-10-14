@@ -11,7 +11,7 @@
 class Grafo final {
 public:
   Grafo(bool direcionado, std::size_t num_nos = 0, std::size_t num_arestas = 0);
-  void adicionarNo(int id, int peso);                              // b
+  void adicionarNo(int id, Vertice vertice);                              // b
   bool removerNo(int id);
   void adicionarAresta(int origem, int destino, int peso = 1);     // b
   void removerAresta(int origem, int destino);                     // b
