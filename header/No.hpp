@@ -13,7 +13,7 @@ struct Vertice{
 
     int id;
     int hotel_maix_proximo;
-    bool visitado;
+    bool visitado = false;
     int peso;
     std::forward_list<Aresta> arestas{};
     bool obrigatorio = false;

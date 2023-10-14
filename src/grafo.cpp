@@ -26,11 +26,6 @@ void Grafo::adicionarNo(int id, Vertice vertice)
   nos.emplace(id, vertice);
 }
 
-bool Grafo::removerNo(int id)
-{
-    return true;
-}
-
 void Grafo::adicionarAresta(int origem, int destino, int peso)
 {
   auto itOrigem = nos.find(origem);
@@ -39,11 +34,15 @@ void Grafo::adicionarAresta(int origem, int destino, int peso)
     return;
   }
   Aresta aresta{ destino, peso };
-  itOrigem->second.arestas.push_front(aresta);  
+  itOrigem->second.arestas.push_front(aresta);
   Aresta arestaOposta{ origem, peso };
   itDestino->second.arestas.push_front(arestaOposta);
   
-  
+}
+
+bool Grafo::removerNo(int id)
+{
+    return true;
 }
 
 void Grafo::removerAresta(int origem, int destino)
