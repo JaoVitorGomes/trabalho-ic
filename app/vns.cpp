@@ -89,26 +89,3 @@ vector<int> VNS(vector<vector<int>>& tasks, int maxIterations) {
 
     return solution;
 }
-
-int main() {
-    srand(time(0));
-
-    // Define the tasks and their costs
-    vector<vector<int>> tasks = {
-        {10, 20, 30},
-        {40, 50, 60},
-        {70, 80, 90}
-    };
-
-    // Run the VNS algorithm
-    vector<int> solution = VNS(tasks, 1000);
-
-    // Print the solution and its cost
-    cout << "Solution: ";
-    for (int i : solution) {
-        cout << i << " ";
-    }
-    cout << "\nCost: " << calculateCost(tasks, solution) << endl;
-
-    return 0;
-}
