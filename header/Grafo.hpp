@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <string>
 
 class Grafo final {
 public:
@@ -19,6 +20,7 @@ public:
   std::pair<int, std::vector<int>> dijkstra(int origem, int destino);                      // m
   std::pair<std::vector<int>, int> geraSolucao(int origem, double limite_tempo, int destino_final, int num_dias, double alpha);
   void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios);
+  Grafo* criaGrafoArquivo(std::string filename);     
   
 private:
   std::unordered_map<int, Vertice> nos{};

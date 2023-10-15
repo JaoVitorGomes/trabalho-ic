@@ -15,6 +15,11 @@
 #include <vector>
 #include <cstddef>
 #include <tuple>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+
 
 Grafo::Grafo(bool direcionado, std::size_t num_nos, std::size_t num_arestas)
 {
@@ -308,7 +313,57 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(int origem, double limite_te
     return std::make_pair(solucao, pontuacao_solucao);   
 }
 
+Grafo* Grafo::criaGrafoArquivo(std::string filename) {
+    std::ifstream file(filename);
+    std::string line, linha1,linha2,linha3;
+
+    int V = 0;
+    int vert, hotEx, trip;
+    std::vector<std::pair<int, int>> edges;
+    std::vector<int> pesos;
+
+    getline(file, line);
+    linha1 = line;
+    std::istringstream iss(line);
+    iss >> vert >> hotEx >> trip;
+
+    getline(file, line);
+    linha2 = line;
+
+    getline(file, line);
+    linha3 = line;
+
+    getline(file,line);
+
+    while (getline(file, line)) {
+
+      std::istringstream iss(line);
+      int x, y , si;
+      iss >> x >> y >> si;
+      edges.push_back(std::make_pair(x, y));
+      pesos.push_back(si);
+      V = std::max(V, std::max(x, y));
+
+    }
+
+    Grafo* grafo = new Grafo(false,vert,((vert * vert-1)/2));
+    int cout = 0;
+
+    for (auto no : edges) {
+
+      Vertice novono;
+      novono.id = cout;
+      novono.coord = no;
+      novono.peso = pesos[cout];
+
+      grafo->adicionarNo(cout,novono);
+      cout++;
+
+    }
+
+    return grafo;
 
 
+}
 
 
