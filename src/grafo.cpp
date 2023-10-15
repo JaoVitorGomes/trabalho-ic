@@ -429,26 +429,51 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
 
 bool Grafo::validarSolucao(std::vector<int> solucao){
   int contador_dias = 0;
-  std::vector<int> valor_solucao;
-  for(int i = 1; i < solucao.size()-1; i++){
+  std::vector<float> pesos_arestas;
 
-    if(valor_solucao[contador_dias] > this->tempos_limites_dias[contador_dias]){
+  // Preenche a lista de candidatos
+  for (auto& [id_vizinho, peso_aresta] : this->nos[solucao[0]].arestas)
+      if(id_vizinho == solucao[1]){
+        pesos_arestas.push_back(peso_aresta);
+        break;
+      }
+
+  for(int i = 1; i < solucao.size()-2; i++){
+
+    for (auto& [id_vizinho, peso_aresta] : this->nos[solucao[i]].arestas)
+      if(id_vizinho == solucao[i+1]){
+        pesos_arestas.push_back(peso_aresta);
+        break;
+    }
+
+    float soma_parcial = 0;
+    for(auto& peso : pesos_arestas)
+      soma_parcial+=peso;
+
+    if(soma_parcial > this->tempos_limites_dias[contador_dias]){
       return false;
     }
-    if( this->nos[solucao[i]].peso == 0){
+    
+    if(this->nos[solucao[i]].peso == 0){
       contador_dias++;
+      pesos_arestas.clear();
     }
-    valor_solucao[contador_dias] += this->nos[solucao[i]].peso;
+
   }
 
   return true;
+
 }
 
 int Grafo::calculaCusto(std::vector<int> solucao){
+  
   int valor_solucao = 0;
+
   for(auto& valor : solucao){
     valor_solucao += this->nos[valor].peso;
   }
+
+  return valor_solucao;
 
 }
 
