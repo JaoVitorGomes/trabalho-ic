@@ -16,13 +16,12 @@ public:
   bool removerNo(int id);
   void removerAresta(int origem, int destino);                     // b
   Vertice& no(int id);                                                  // c
-  int dijkstra(int origem, int destino);                           // m
+  std::pair<int, std::vector<int>> dijkstra(int origem, int destino);                      // m
   //std::vector<Vertice&> geraSolucaoInicial(std::vector<int> destinos_obrigatorios, double alpha);
   void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios);
   
 private:
   std::unordered_map<int, Vertice> nos{};
-  std::unordered_map<int, Vertice> hoteis{};
   std::vector<std::vector<int>> floyd_interno();
   
 };

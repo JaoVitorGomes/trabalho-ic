@@ -2,7 +2,7 @@
 #define NO_HPP
 
 #include <forward_list>
-
+#include <vector>
 
 struct Aresta {
   int id{};
@@ -12,11 +12,12 @@ struct Aresta {
 struct Vertice{
 
     int id;
-    int hotel_maix_proximo;
     bool visitado = false;
     int peso;
     std::forward_list<Aresta> arestas{};
-    bool obrigatorio = false;
+    bool is_hotel = false;
+    std::vector<int> path_nearest_hotel;
+    int cost_nearest_hotel;
 };
 
 

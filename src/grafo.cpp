@@ -68,55 +68,72 @@ Vertice& Grafo::no(int id)
   return nos.at(id);
 }
 
-// Testa se realmente está pegando o peso das arestas
-int Grafo::dijkstra(int origem, int destino)
-{
-  int ordem = nos.size();
-  auto itOrigem = nos.find(origem);
-  auto itDestino = nos.find(destino);
-  if (ordem <= 1)
-    return 0;
+std::pair<int, std::vector<int>> Grafo::dijkstra(int origem, int destino) {
+    int ordem = nos.size();
+    auto itOrigem = nos.find(origem);
+    auto itDestino = nos.find(destino);
+    if (ordem <= 1)
+        return std::make_pair(0, std::vector<int>());
 
-  Vertice& noOrigem = itOrigem->second;
-  Vertice& noDestino = itDestino->second;
+    Vertice& noOrigem = itOrigem->second;
+    Vertice& noDestino = itDestino->second;
 
-  std::unordered_map<int, int> distancias;
-  for (const auto& par : nos)
-    distancias[par.first] = std::numeric_limits<int>::max();
+    std::unordered_map<int, int> distancias;
+    std::unordered_map<int, int> antecessores;
 
-  distancias[origem] = 0;
-
-  std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> fila;
-
-  fila.push(std::make_pair(0, origem));
-
-  while (!fila.empty()) {
-    int distanciaAtual = fila.top().first;
-    int idAtual = fila.top().second;
-    fila.pop();
-
-    if (idAtual == destino) {
-      break;
+    for (const auto& par : nos) {
+        distancias[par.first] = std::numeric_limits<int>::max();
+        antecessores[par.first] = -1; // Inicialmente não possui antecessor.
     }
 
-    Vertice& noAtual = nos[idAtual];
+    distancias[origem] = 0;
 
-    for (const auto& aresta : noAtual.arestas) {
-      int idAdjacente = aresta.id;
-      int pesoAteAdjacente = aresta.peso;
-      Vertice& noAdjacente = nos[idAdjacente];
+    std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> fila;
 
-      int novaDistancia = distanciaAtual + pesoAteAdjacente;
+    fila.push(std::make_pair(0, origem));
 
-      if (novaDistancia < distancias[idAdjacente]) {
-        distancias[idAdjacente] = novaDistancia;
-        fila.push(std::make_pair(novaDistancia, idAdjacente));
-      }
+    while (!fila.empty()) {
+        int distanciaAtual = fila.top().first;
+        int idAtual = fila.top().second;
+        fila.pop();
+
+        if (idAtual == destino) {
+            break;
+        }
+
+        Vertice& noAtual = nos[idAtual];
+
+        for (const auto& aresta : noAtual.arestas) {
+            int idAdjacente = aresta.id;
+            int pesoAteAdjacente = aresta.peso;
+            Vertice& noAdjacente = nos[idAdjacente];
+
+            int novaDistancia = distanciaAtual + pesoAteAdjacente;
+
+            if (novaDistancia < distancias[idAdjacente]) {
+                distancias[idAdjacente] = novaDistancia;
+                antecessores[idAdjacente] = idAtual;
+                fila.push(std::make_pair(novaDistancia, idAdjacente));
+            }
+        }
     }
-  }
-  std::cout << "Custo do caminho minimo usando djikstra: " << distancias[destino] << "\n";
-  return distancias[destino];
+
+    // Construir o vetor do caminho mínimo a partir dos antecessores
+    std::vector<int> caminho;
+    int noAtual = destino;
+    while (noAtual != -1) {
+        caminho.push_back(noAtual);
+        noAtual = antecessores[noAtual];
+    }
+
+    // Inverter o vetor, já que a construção começa pelo destino
+    std::reverse(caminho.begin(), caminho.end());
+
+    int custoCaminho = distancias[destino];
+
+    return std::make_pair(custoCaminho, caminho);
 }
+
 
 std::vector<std::vector<int>> Grafo::floyd_interno()
 {
