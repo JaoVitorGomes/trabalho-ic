@@ -10,23 +10,30 @@
 
 using namespace std;
 
-vector<int> gerarSolucao(vector<int> solution, vector<int> ids)
+vector<int> gerarSolucao(vector<int> solution, vector<int> ids, Grafo grafo)
 {
-    int no1 = Random::get(2, ids.size() - 1);
-    int no2 = Random::get(2, ids.size() - 1);
+    bool verify = false;
+    vector<int> nova_solucao;
 
-    int no3 = Random::get(1, solution.size() - 2);
-    int no4 = Random::get(1, solution.size() - 2);
+    while(verify == false){
+        nova_solucao = solution;
+        int no1 = Random::get(2, ids.size() - 1);
+        int no2 = Random::get(2, ids.size() - 1);
 
-    solution[no3] = no1;
-    solution[no4] = no2;
+        int no3 = Random::get(1, solution.size() - 2);
+        int no4 = Random::get(1, solution.size() - 2);
 
-    return solution;
+        nova_solucao[no3] = no1;
+        nova_solucao[no4] = no2;
+
+        if(grafo.validarSolucao(nova_solucao)){
+            verify = true;
+        }
+    }
+
+    return nova_solucao;
 }
 
-bool solucaoViavel(vector<int> solution, Grafo grafo)
-{
-}
 
 // Function to perform a VND move
 void performVNDMove(vector<int> ids, vector<int> &solution)

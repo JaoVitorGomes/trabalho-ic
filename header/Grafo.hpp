@@ -25,6 +25,7 @@ public:
   void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios); 
 
   void printa_arestas();   
+  bool validarSolucao(std::vector<int> solucao);
   
 private:
   std::unordered_map<int, Vertice> nos{};

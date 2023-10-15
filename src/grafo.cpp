@@ -454,3 +454,20 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha) {
     return std::make_pair(solucao, pontuacao_solucao);   
 }
 
+bool Grafo::validarSolucao(std::vector<int> solucao){
+  int contador_dias = 0;
+  std::vector<int> valor_solucao;
+  for(int i = 1; i < solucao.size()-1; i++){
+
+    if(valor_solucao[contador_dias] > this->tempos_limites_dias[contador_dias]){
+      return false;
+    }
+    if( this->nos[solucao[i]].peso == 0){
+      contador_dias++;
+    }
+    valor_solucao[contador_dias] += this->nos[solucao[i]].peso;
+  }
+
+  return true;
+}
+
