@@ -17,12 +17,13 @@ public:
   void removerAresta(int origem, int destino);                     // b
   Vertice& no(int id);                                                  // c
   std::pair<int, std::vector<int>> dijkstra(int origem, int destino);                      // m
-  //std::vector<Vertice&> geraSolucaoInicial(std::vector<int> destinos_obrigatorios, double alpha);
+  std::pair<std::vector<int>, int> geraSolucao(int origem, double limite_tempo, int destino_final, int num_dias, double alpha);
   void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios);
   
 private:
   std::unordered_map<int, Vertice> nos{};
   std::vector<std::vector<int>> floyd_interno();
+  int ordem;
   
 };
 

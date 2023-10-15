@@ -18,6 +18,8 @@ struct Vertice{
     bool is_hotel = false;
     std::vector<int> path_nearest_hotel;
     int cost_nearest_hotel;
+    std::vector<int> path_to_last_destiny;
+    int cost_last_destiny;
 };
 
 

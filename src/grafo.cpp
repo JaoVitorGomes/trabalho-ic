@@ -165,70 +165,150 @@ std::vector<std::vector<int>> Grafo::floyd_interno()
   return distancias;
 }
 
-/*std::vector<Vertice&> geraSolucaoInicial(std::vector<int> destinos_obrigatorios, double alpha);
-{
+void encerra_viagem(std::vector<int>& solucao, std::vector<int>& caminhoFinal){
+    for(auto elemento : caminhoFinal)
+    solucao.push_back(elemento);
 
-  auto melhor_solucao = Cobertura{};
-  auto melhor_custo = Custo{ std::numeric_limits<int>::max() };
+}
 
-  using Id = int;
-  auto start_nos = std::unordered_map<Id, Vertice>{};
-  start_nos.reserve(ordem());
-  for (const auto& [id, no] : nos) {
-    auto [it, _] = start_nos.emplace(std::make_pair(id, NoCobertura{ no.peso, no.peso, no.grau_entrada }));
-    for (const auto& aresta : no.arestas) {
-      it->second.delta -= nos.at(aresta.id).peso;
-    }
-  }
+void encerra_dia(std::vector<int>& solucao, Vertice& no_ref){
+  for(auto elemento : no_ref.path_nearest_hotel)
+    solucao.push_back(elemento);
 
-  std::vector<Id> start_ids_ordenados;
-  for (const auto& pair : start_nos) {
-    start_ids_ordenados.push_back(pair.first);
-  }
-  std::ranges::sort(start_ids_ordenados, [&](const auto& a, const auto& b) {
-    return start_nos[a].delta < start_nos[b].delta;
-  });
+}
 
-  for (auto count = 0; count < 1000; ++count) {
-    auto nos = start_nos;
-    auto ids_ordenados = start_ids_ordenados;
-    auto solucao = Cobertura{};
-    auto custo = Custo{ 0 };
-    auto num_arestas_cobertas = int{ 0 };
+std::pair<std::vector<int>, int> Grafo::geraSolucao(int origem, double limite_tempo, int destino_final, int num_dias, double alpha) {
 
-    while (num_arestas_cobertas < m_num_arestas) {
-      auto index = Random::get(0, static_cast<int>(std::ceil(alpha * (nos.size() - 1))));
-      auto id = ids_ordenados[index];
-      auto min = nos[id];
-      nos.erase(id);
-      ids_ordenados.erase(ids_ordenados.begin() + index);
+    // INICIALIZÇÕES
+    std::vector<int> solucao;
+    bool fim_viagem = false;
+    std::vector<std::pair<int, float>> candidatos(ordem-1);
+    int pos_candidato = 0;
+    int dias_decorridos = 0;
+    float tempo_restante = limite_tempo;
+    Vertice& no_ref = nos[origem];
 
-      if (min.grau > 0) {
-        solucao.push_back(id);
-        custo += min.peso;
-        num_arestas_cobertas += min.grau;
+    // COMEÇO LOOP
+    while(!fim_viagem){
 
-        for (const auto& aresta : m_nos[id].arestas) {
-          if (auto vizinho = nos.find(aresta.id); vizinho != nos.end()) {
-            vizinho->second.delta += min.peso;
-            vizinho->second.grau -= 1;
-          }
-        }
+      // Permite a expansão ocasional do alpha na busca por candidatos
+      float alpha_local = alpha;
+
+      // Preenche a lista de candidatos
+      for(auto& [id_vizinho, peso_aresta] : no_ref.arestas){
+          Vertice& vizinho = nos[id_vizinho];
+          float pontuacao_candidato = (vizinho.peso)/peso_aresta;
+          candidatos[pos_candidato] = std::make_pair(id_vizinho, pontuacao_candidato); 
+          ++pos_candidato;
       }
 
-      std::ranges::sort(ids_ordenados, [&](auto a, auto b) {
-        return nos[a].delta < nos[b].delta;
-      });
-    }
+      pos_candidato = 0;
 
-    if (custo < melhor_custo) {
-      melhor_custo = custo;
-      melhor_solucao = solucao;
-    }
-  }
+      // Ordena os candidatos em ordem decrescente  
+      std::sort(candidatos.begin(), candidatos.end(),
+            [](const std::pair<int, float>& a, const std::pair<int, float>& b) {
+                return a.second > b.second;
+            }
+      );
 
-  return { melhor_solucao, melhor_custo };
-}*/
+      // Sorteia um candidato
+      auto candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha * (ordem - 1))));
+      
+      // üLTIMO DIA 
+      if (dias_decorridos+1 == num_dias){
+
+        // Candidato válido
+        if(!nos[candidatos[candidato_escolhido].first].visitado && nos[candidato_escolhido].cost_last_destiny <= tempo_restante){
+                solucao.push_back(no_ref.id);
+                no_ref.visitado = true;
+                no_ref = nos[candidato_escolhido];
+                // Pega o peso da aresta e subtrai do tempo restante
+                tempo_restante-=nos[candidatos[candidato_escolhido].first].peso * candidatos[candidato_escolhido].second;
+            }
+        // Se não achar algum candidato de primeira
+        else{
+  
+              bool buscando_candidato = true;
+                
+              while (alpha_local<0.6 && !buscando_candidato){
+                  
+                // Sorteia um candidato
+                auto candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * (ordem - 1))));
+
+                if(!nos[candidatos[candidato_escolhido].first].visitado && nos[candidato_escolhido].cost_last_destiny <= tempo_restante){
+                    solucao.push_back(no_ref.id);
+                    no_ref.visitado = true;
+                    no_ref = nos[candidato_escolhido];
+                    // Pega o peso da aresta e subtrai do tempo restante
+                    tempo_restante-=nos[candidatos[candidato_escolhido].first].peso * candidatos[candidato_escolhido].second;
+                    buscando_candidato = false;
+                }
+                // Se novamente não achar ninguém, aumenta o escopo
+                else
+                  alpha_local+=0.05;
+
+              }
+              // Se mesno aumentando tanto assim o escopo não achar ninguém, encerra o dia
+              if(alpha_local==0.6){
+                encerra_viagem(solucao, no_ref.path_to_last_destiny);
+                fim_viagem = true;
+              }    
+          }
+      }
+      
+      // NÃO ESTÁ NO ÚLTIMO DIA
+      else{
+            if(!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel <= tempo_restante){
+                solucao.push_back(no_ref.id);
+                no_ref.visitado = true;
+                no_ref = nos[candidato_escolhido];
+                // Pega o peso da aresta e subtrai do tempo restante
+                tempo_restante-=nos[candidatos[candidato_escolhido].first].peso * candidatos[candidato_escolhido].second;
+            }
+
+            // Se não achar algum candidato de primeira
+            else{
+                
+                bool buscando_candidato = true;
+                
+                while (alpha_local<0.6 && !buscando_candidato){
+                  
+                  // Sorteia um candidato
+                  auto candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * (ordem - 1))));
+
+                  if(!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel <= tempo_restante){
+                      solucao.push_back(no_ref.id);
+                      no_ref.visitado = true;
+                      no_ref = nos[candidato_escolhido];
+                      // Pega o peso da aresta e subtrai do tempo restante
+                      tempo_restante-=nos[candidatos[candidato_escolhido].first].peso * candidatos[candidato_escolhido].second;
+                      buscando_candidato = false;
+                  }
+                  // Se novamente não achar ninguém, aumenta o escopo
+                  else
+                    alpha_local+=0.05;
+
+                }
+                // Se mesno aumentando tanto assim o escopo não achar ninguém, encerra o dia
+                if(alpha_local==0.6){
+                  encerra_dia(solucao, no_ref);
+                  ++dias_decorridos;
+                  tempo_restante = limite_tempo;
+                  // Atualiza o no_ref para partir do hotel onde se parou no dia anterior
+                  no_ref = nos[solucao[solucao.size()-1]];
+                }    
+            }
+        }
+    } 
+    
+    int pontuacao_solucao = 0;
+    for(auto& elemento : solucao)
+      pontuacao_solucao+=nos[elemento].peso;
+
+    return std::make_pair(solucao, pontuacao_solucao);   
+}
+
+
 
 
 
