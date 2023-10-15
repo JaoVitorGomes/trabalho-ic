@@ -3,110 +3,98 @@
 #include <algorithm>
 #include <ctime>
 #include <cstdlib>
+#include <random>
+
+#include "../header/random.hpp"
+#include "../header/Grafo.hpp"
 
 using namespace std;
 
-// Function to calculate the cost of a solution
-int calculateCost(vector<vector<int>>& tasks, vector<int>& solution) {
-    int cost = 0;
-    for (int i = 0; i < tasks.size(); i++) {
-        cost += tasks[i][solution[i]];
-    }
-    return cost;
-}
+vector<int> gerarSolucao(vector<int> solution, vector<int> ids)
+{
+    int no1 = Random::get(2, ids.size() - 1);
+    int no2 = Random::get(2, ids.size() - 1);
 
-// Function to generate a random solution
-vector<int> generateRandomSolution(vector<vector<int>>& tasks) {
-    vector<int> solution(tasks.size(), 0);
-    for (int i = 0; i < tasks.size(); i++) {
-        solution[i] = rand() % tasks[i].size();
-    }
+    int no3 = Random::get(1, solution.size() - 2);
+    int no4 = Random::get(1, solution.size() - 2);
+
+    solution[no3] = no1;
+    solution[no4] = no2;
+
     return solution;
 }
 
-// Function to perform a VND move
-void performVNDMove(vector<vector<int>>& tasks, vector<int>& solution) {
-    int bestCost = calculateCost(tasks, solution);
-    vector<int> bestSolution = solution;
+bool solucaoViavel(vector<int> solution, Grafo grafo)
+{
+}
 
-    for (int i = 0; i < tasks.size(); i++) {
-        for (int j = 0; j < tasks[i].size(); j++) {
-            if (j != solution[i]) {
-                solution[i] = j;
-                int currentCost = calculateCost(tasks, solution);
-                if (currentCost < bestCost) {
-                    bestCost = currentCost;
-                    bestSolution = solution;
-                }
-            }
+// Function to perform a VND move
+void performVNDMove(vector<int> ids, vector<int> &solution)
+{
+    int melhor_custo = calculaCusto(ids, solution);
+    vector<int> melhor_solucao = solution;
+    vector<int> nova_solucao;
+
+    for (int i = 0; i < 20; i++)
+    {
+
+        nova_solucao = gerarSolucao(solution, ids);
+        int custo_atual = calculateCost(nova_solucao);
+        if (custo_atual < melhor_custo)
+        {
+            melhor_custo = custo_atual;
+            melhor_solucao = solution;
         }
     }
 
-    solution = bestSolution;
+    solution = melhor_solucao;
 }
 
 // Function to perform a VNS move
-void performVNSMove(vector<vector<int>>& tasks, vector<int>& solution) {
-    int bestCost = calculateCost(tasks, solution);
-    vector<int> bestSolution = solution;
+void performVNSMove(vector<int> &ids, vector<int> &solution)
+{
+    int melhor_custo = calculateCost(ids, solution);
+    vector<int> melhor_solucao = solution;
+    vector<int> nova_solucao;
 
-    for (int i = 0; i < tasks.size(); i++) {
-        for (int j = 0; j < tasks[i].size(); j++) {
-            if (j != solution[i]) {
-                solution[i] = j;
-                int currentCost = calculateCost(tasks, solution);
-                if (currentCost < bestCost) {
-                    bestCost = currentCost;
-                    bestSolution = solution;
-                } else {
-                    solution[i] = j;
-                }
-            }
+    for (int i = 0; i < 20; i++)
+    {
+
+        nova_solucao = gerarSolucao(solution, ids);
+        int custo_atual = calculateCost(nova_solucao);
+
+        if (custo_atual < melhor_custo)
+        {
+            melhor_custo = custo_atual;
+            melhor_solucao = solution;
         }
     }
 
-    solution = bestSolution;
+    solution = melhor_solucao;
 }
 
 // Function to implement the VNS algorithm
-vector<int> VNS(vector<vector<int>>& tasks, int maxIterations) {
-    vector<int> solution = generateRandomSolution(tasks);
-    int currentCost = calculateCost(tasks, solution);
+vector<int> VNS(Grafo grafo, int ids, int maxIterations)
+{
+    std::pair<std::vector<int>, int> solucao = grafo.geraSolucao(0, 10, 1, 2, 0.6);
+    vector<int> solution = solucao.first;
+    int custo_atual = calculaCusto(solution);
 
-    for (int i = 0; i < maxIterations; i++) {
-        performVNDMove(tasks, solution);
-        performVNSMove(tasks, solution);
+    for (int i = 0; i < maxIterations; i++)
+    {
+        performVNDMove(ids, solution);
+        performVNSMove(ids, solution);
 
-        int newCost = calculateCost(tasks, solution);
-        if (newCost < currentCost) {
-            currentCost = newCost;
-        } else {
+        int novo_custo = cauculaCusto(solution);
+        if (novo_custo < custo_atual)
+        {
+            custo_atual = novo_custo;
+        }
+        else
+        {
             break;
         }
     }
 
     return solution;
-}
-
-int main() {
-    srand(time(0));
-
-    // Define the tasks and their costs
-    vector<vector<int>> tasks = {
-        {10, 20, 30},
-        {40, 50, 60},
-        {70, 80, 90}
-    };
-
-    // Run the VNS algorithm
-    vector<int> solution = VNS(tasks, 1000);
-
-    // Print the solution and its cost
-    cout << "Solution: ";
-    for (int i : solution) {
-        cout << i << " ";
-    }
-    cout << "\nCost: " << calculateCost(tasks, solution) << endl;
-
-    return 0;
 }
