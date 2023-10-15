@@ -10,15 +10,15 @@
 
 using namespace std;
 
-vector<int> gerarSolucao(Grafo grafo, vector<int> solution, vector<int> ids)
+vector<int> gerarSolucao(Grafo grafo, vector<int> solution, int ids)
 {
     bool verify = false;
     vector<int> nova_solucao;
 
     while(verify == false){
         nova_solucao = solution;
-        int no1 = Random::get(2, ids.size() - 1);
-        int no2 = Random::get(2, ids.size() - 1);
+        int no1 = Random::get(2, ids - 1);
+        int no2 = Random::get(2, ids - 1);
 
         int no3 = Random::get(1, solution.size() - 2);
         int no4 = Random::get(1, solution.size() - 2);
@@ -36,7 +36,7 @@ vector<int> gerarSolucao(Grafo grafo, vector<int> solution, vector<int> ids)
 
 
 // Function to perform a VND move
-void performVNDMove(Grafo grafo, vector<int> ids, vector<int> &solution)
+void performVNDMove(Grafo grafo, int ids, vector<int> &solution)
 {
     int melhor_custo = grafo.calculaCusto(solution);
     vector<int> melhor_solucao = solution;
@@ -58,7 +58,7 @@ void performVNDMove(Grafo grafo, vector<int> ids, vector<int> &solution)
 }
 
 // Function to perform a VNS move
-void performVNSMove(Grafo grafo,vector<int> &ids, vector<int> &solution)
+void performVNSMove(Grafo grafo,int ids, vector<int> &solution)
 {
     int melhor_custo = grafo.calculaCusto(solution);
     vector<int> melhor_solucao = solution;
@@ -81,7 +81,7 @@ void performVNSMove(Grafo grafo,vector<int> &ids, vector<int> &solution)
 }
 
 // Function to implement the VNS algorithm
-vector<int> VNS(Grafo grafo, vector<int> ids, int maxIterations)
+vector<int> VNS(Grafo grafo, int ids, int maxIterations)
 {
     std::pair<std::vector<int>, int> solucao = grafo.geraSolucao(0.6);
     vector<int> solution = solucao.first;

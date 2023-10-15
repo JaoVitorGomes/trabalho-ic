@@ -479,3 +479,8 @@ int Grafo::calculaCusto(std::vector<int> solucao){
 
 }
 
+int Grafo::quantidadeNos(){
+  return nos.size();
+
+}
+

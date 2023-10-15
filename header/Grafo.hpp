@@ -27,6 +27,7 @@ public:
   void printa_arestas();   
   bool validarSolucao(std::vector<int> solucao);
   int calculaCusto(std::vector<int> solucao);
+  int quantidadeNos();
 
 private:
   std::unordered_map<int, Vertice> nos{};
