@@ -30,7 +30,7 @@ vector<int> gerarSolucao(Grafo grafo, vector<int> solution, int ids)
             verify = true;
         }
     }
-
+    cout << nova_solucao.size() << endl;
     return nova_solucao;
 }
 
@@ -50,7 +50,7 @@ void performVNDMove(Grafo grafo, int ids, vector<int> &solution)
         if (custo_atual < melhor_custo)
         {
             melhor_custo = custo_atual;
-            melhor_solucao = solution;
+            melhor_solucao = nova_solucao;
         }
     }
 
@@ -73,7 +73,7 @@ void performVNSMove(Grafo grafo,int ids, vector<int> &solution)
         if (custo_atual < melhor_custo)
         {
             melhor_custo = custo_atual;
-            melhor_solucao = solution;
+            melhor_solucao = nova_solucao;
         }
     }
 
@@ -89,7 +89,7 @@ vector<int> VNS(Grafo grafo, int ids, int maxIterations)
 
     for (int i = 0; i < maxIterations; i++)
     {
-        performVNDMove(grafo,ids, solution);
+        //performVNDMove(grafo,ids, solution);
         performVNSMove(grafo,ids, solution);
 
         int novo_custo = grafo.calculaCusto(solution);

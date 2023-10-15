@@ -19,6 +19,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <set>
 
 Grafo::Grafo(std::string filename){
 
@@ -460,7 +461,15 @@ bool Grafo::validarSolucao(std::vector<int> solucao){
     }
 
   }
-
+  std::set<int> numeros;
+  for (int numero : solucao) {
+    numeros.insert(numero);
+  }
+  //std::cout << numeros.size() << " teste "<<  solucao.size() << std::endl;
+   if(numeros.size() != solucao.size()){
+    return false;
+   }
+   std::cout << "numeros-> "<<numeros.size() << "solucao-> " << solucao.size() << std::endl;
   return true;
 
 }
