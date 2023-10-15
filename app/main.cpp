@@ -1,7 +1,8 @@
 #include <algorithm>
 #include <iostream>
-#include "../header/Grafo.hpp"
 #include <vector>
+#include "../header/Grafo.hpp"
+#include "../src/vns.cpp"
 using namespace std;
 
 int main(int argc, const char* argv[])
@@ -14,6 +15,7 @@ int main(int argc, const char* argv[])
     for(int i = 1; i<solucao.size(); i++)
         std::cout<<solucao[i]<<"->";
 
+    VNS(teste,teste.quantidadeNos(),1000);
     return 0;
 
 }
