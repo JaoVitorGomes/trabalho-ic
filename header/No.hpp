@@ -6,7 +6,7 @@
 
 struct Aresta {
   int id{};
-  int peso{ 1 };
+  float peso{ 1.0 };
 };
 
 struct Vertice{

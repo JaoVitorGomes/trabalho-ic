@@ -11,21 +11,29 @@
 
 class Grafo final {
 public:
-  Grafo(bool direcionado, std::size_t num_nos = 0, std::size_t num_arestas = 0);
+  Grafo(std::string filename);
   void adicionarNo(int id, Vertice vertice);                              // b
-  void adicionarAresta(int origem, int destino, int peso = 1);     // b
+  void adicionarAresta(int origem, int destino, float peso = 1.0);     // b
   bool removerNo(int id);
   void removerAresta(int origem, int destino);                     // b
+  void acha_hotel_mais_perto(Vertice& no);
+  void acha_caminho_mais_proximo_final_hotel(Vertice& no);
   Vertice& no(int id);                                                  // c
   std::pair<int, std::vector<int>> dijkstra(int origem, int destino);                      // m
-  std::pair<std::vector<int>, int> geraSolucao(int origem, double limite_tempo, int destino_final, int num_dias, double alpha);
-  void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios);
-  Grafo* criaGrafoArquivo(std::string filename);     
+  std::pair<std::vector<int>, int> geraSolucao(double alpha);
+  
+  void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios); 
+
+  void printa_arestas();   
   
 private:
   std::unordered_map<int, Vertice> nos{};
   std::vector<std::vector<int>> floyd_interno();
   int ordem;
+  std::vector<float> tempos_limites_dias;
+  std::pair<int, int> comeco_fim;
+  std::vector<int> ids_hoteis;
+  int tam_trip;
   
 };
 
