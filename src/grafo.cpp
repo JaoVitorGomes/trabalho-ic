@@ -471,3 +471,11 @@ bool Grafo::validarSolucao(std::vector<int> solucao){
   return true;
 }
 
+int Grafo::calculaCusto(std::vector<int> solucao){
+  int valor_solucao = 0;
+  for(auto& valor : solucao){
+    valor_solucao += this->nos[valor].peso;
+  }
+
+}
+

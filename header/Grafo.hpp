@@ -26,7 +26,8 @@ public:
 
   void printa_arestas();   
   bool validarSolucao(std::vector<int> solucao);
-  
+  int calculaCusto(std::vector<int> solucao);
+
 private:
   std::unordered_map<int, Vertice> nos{};
   std::vector<std::vector<int>> floyd_interno();

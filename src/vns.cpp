@@ -10,7 +10,7 @@
 
 using namespace std;
 
-vector<int> gerarSolucao(vector<int> solution, vector<int> ids, Grafo grafo)
+vector<int> gerarSolucao(Grafo grafo, vector<int> solution, vector<int> ids)
 {
     bool verify = false;
     vector<int> nova_solucao;
@@ -36,17 +36,17 @@ vector<int> gerarSolucao(vector<int> solution, vector<int> ids, Grafo grafo)
 
 
 // Function to perform a VND move
-void performVNDMove(vector<int> ids, vector<int> &solution)
+void performVNDMove(Grafo grafo, vector<int> ids, vector<int> &solution)
 {
-    int melhor_custo = calculaCusto(ids, solution);
+    int melhor_custo = grafo.calculaCusto(solution);
     vector<int> melhor_solucao = solution;
     vector<int> nova_solucao;
 
     for (int i = 0; i < 20; i++)
     {
 
-        nova_solucao = gerarSolucao(solution, ids);
-        int custo_atual = calculateCost(nova_solucao);
+        nova_solucao = gerarSolucao(grafo, solution, ids);
+        int custo_atual = grafo.calculaCusto(solution);
         if (custo_atual < melhor_custo)
         {
             melhor_custo = custo_atual;
@@ -58,17 +58,17 @@ void performVNDMove(vector<int> ids, vector<int> &solution)
 }
 
 // Function to perform a VNS move
-void performVNSMove(vector<int> &ids, vector<int> &solution)
+void performVNSMove(Grafo grafo,vector<int> &ids, vector<int> &solution)
 {
-    int melhor_custo = calculateCost(ids, solution);
+    int melhor_custo = grafo.calculaCusto(solution);
     vector<int> melhor_solucao = solution;
     vector<int> nova_solucao;
 
     for (int i = 0; i < 20; i++)
     {
 
-        nova_solucao = gerarSolucao(solution, ids);
-        int custo_atual = calculateCost(nova_solucao);
+        nova_solucao = gerarSolucao(grafo, solution, ids);
+        int custo_atual = grafo.calculaCusto(solution);
 
         if (custo_atual < melhor_custo)
         {
@@ -81,18 +81,18 @@ void performVNSMove(vector<int> &ids, vector<int> &solution)
 }
 
 // Function to implement the VNS algorithm
-vector<int> VNS(Grafo grafo, int ids, int maxIterations)
+vector<int> VNS(Grafo grafo, vector<int> ids, int maxIterations)
 {
-    std::pair<std::vector<int>, int> solucao = grafo.geraSolucao(0, 10, 1, 2, 0.6);
+    std::pair<std::vector<int>, int> solucao = grafo.geraSolucao(0.6);
     vector<int> solution = solucao.first;
-    int custo_atual = calculaCusto(solution);
+    int custo_atual = grafo.calculaCusto(solution);
 
     for (int i = 0; i < maxIterations; i++)
     {
-        performVNDMove(ids, solution);
-        performVNSMove(ids, solution);
+        performVNDMove(grafo,ids, solution);
+        performVNSMove(grafo,ids, solution);
 
-        int novo_custo = cauculaCusto(solution);
+        int novo_custo = grafo.calculaCusto(solution);
         if (novo_custo < custo_atual)
         {
             custo_atual = novo_custo;
