@@ -323,7 +323,7 @@ void Grafo::encerra_dia(std::vector<int>& solucao, Vertice& no_ref){
 
  }
 
-std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
+std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
     auto nos_local = this->copiarNos();
     
@@ -368,7 +368,7 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
         // Sorteia um candidato
         auto escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
-        // Último dia
+        // ÚLTIMO DIA
         if (dias_decorridos + 1 == this->tam_trip) {
 
             // Candidato válido
@@ -388,7 +388,6 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
                 no_ref = nos[candidatos[escolhido].first];
                 tempo_restante -= pesos_arestas[escolhido];
                 this->recalcula_tudo();
-
             } 
             else {
                 // Se não achar algum candidato de primeira
@@ -400,24 +399,24 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
 
                     if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
                         solucao.push_back(no_ref.id);
-                    nos_local[no_ref.id].visitado = true;
-                    int caraRemovido = no_ref.id;
-                    if(!no_ref.is_hotel)
-                        this->removerNo(no_ref.id);
+                        nos_local[no_ref.id].visitado = true;
+                        int caraRemovido = no_ref.id;
+                        if(!no_ref.is_hotel)
+                            this->removerNo(no_ref.id);
 
-                    if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
-                        std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
-                    else
-                        std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+                        if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                            std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
+                        else
+                            std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
 
-                    no_ref = nos[candidatos[escolhido].first];
-                    tempo_restante -= pesos_arestas[escolhido];
-                    this->recalcula_tudo();
-                    buscando_candidato = false;
+                        no_ref = nos[candidatos[escolhido].first];
+                        tempo_restante -= pesos_arestas[escolhido];
+                        this->recalcula_tudo();
+                        buscando_candidato = false;
 
-                      } 
-		                  else 
-                        alpha_local += 0.05;
+                    } 
+		                else 
+                      alpha_local += 0.05;
                     
                 }
 
@@ -448,7 +447,8 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
                 tempo_restante -= pesos_arestas[escolhido];
                 this->recalcula_tudo();
             } 
-	    else {
+	          else {
+
                 // Se não achar algum candidato de primeira
                 bool buscando_candidato = true;
 

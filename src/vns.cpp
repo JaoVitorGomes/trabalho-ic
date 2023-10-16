@@ -14,7 +14,7 @@ vector<int> gerarSolucao(Grafo grafo, vector<int> solution, int ids)
 {
     bool verify = false;
     vector<int> nova_solucao;
-
+    do{
         nova_solucao = solution;
         int no1 = Random::get(2, ids - 1);
         int no2 = Random::get(2, ids - 1);
@@ -24,6 +24,8 @@ vector<int> gerarSolucao(Grafo grafo, vector<int> solution, int ids)
 
         nova_solucao[no3] = no1;
         nova_solucao[no4] = no2;
+    }
+    while(!grafo.validarSolucao(nova_solucao));
 
     return nova_solucao;
 }
