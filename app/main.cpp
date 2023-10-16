@@ -107,7 +107,9 @@ int main(int argc, const char* argv[])
         if(id_instancia==3){
             set++;
             id_instancia = 1;
+            std::cout<<"Terminei o SET\n"<<set;
         }
+        
     } 
 
     /*
@@ -123,7 +125,7 @@ int main(int argc, const char* argv[])
     for(auto& elemento : solucaoVNS)
         std::cout<<elemento<<"->";
     */
-   
+
     return 0;
 
 }
