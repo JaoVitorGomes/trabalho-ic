@@ -469,7 +469,7 @@ bool Grafo::validarSolucao(std::vector<int> solucao){
    if(numeros.size() != solucao.size()){
     return false;
    }
-   std::cout << "numeros-> "<<numeros.size() << "solucao-> " << solucao.size() << std::endl;
+   //std::cout << "numeros-> "<<numeros.size() << "solucao-> " << solucao.size() << std::endl;
   return true;
 
 }

@@ -64,13 +64,13 @@ int main(int argc, const char* argv[])
 
         Grafo grafo = Grafo(instancia);
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 1; i++)
         {
             auto [solucao, custo_solucao] = grafo.geraSolucao(0.05);
 
             custosIniciais.push_back(custo_solucao);
 
-            auto [solucaoVNS, custo_final] = VNS(grafo,grafo.quantidadeNos(),1000,solucao);
+            auto [solucaoVNS, custo_final] = VNS(grafo,grafo.quantidadeNos(),10,solucao);
 
             custosFinais.push_back(custo_final);
 
@@ -105,9 +105,10 @@ int main(int argc, const char* argv[])
         
         // Controla quando o set reseta
         if(id_instancia==3){
+            std::cout<<"Terminei o SET"<<set<<"\n";
             set++;
             id_instancia = 1;
-            std::cout<<"Terminei o SET\n"<<set;
+            
         }
         
     } 
