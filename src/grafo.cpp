@@ -298,16 +298,24 @@ std::pair<int, std::vector<int>> Grafo::dijkstra(int origem, int destino) {
 }
 
 void Grafo::encerra_viagem(std::vector<int>& solucao, Vertice& no_ref){
-    for(int i = 1;  i<no_ref.path_to_last_destiny.size(); i++){
+  
+  for(int i = 0;  i<no_ref.path_to_last_destiny.size(); i++){
       solucao.push_back(no_ref.path_to_last_destiny[i]);
       this->nos[no_ref.path_to_last_destiny[i]].visitado = true;
-    }      
+      
+      if(!(i==no_ref.path_to_last_destiny.size() - 1))
+        this->removerNo(this->nos[no_ref.path_to_last_destiny[i]].id);
+  }     
 }
 
 void Grafo::encerra_dia(std::vector<int>& solucao, Vertice& no_ref){
-    for(int i = 1;  i<no_ref.path_nearest_hotel.size(); i++){
+    for(int i = 0;  i<no_ref.path_nearest_hotel.size(); i++){
       solucao.push_back(no_ref.path_nearest_hotel[i]);
       this->nos[no_ref.path_nearest_hotel[i]].visitado = true;
+      
+      if(!(i==no_ref.path_nearest_hotel.size() - 1))
+        this->removerNo(this->nos[no_ref.path_nearest_hotel[i]].id);
+
     }
 }
 
@@ -328,7 +336,7 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
     auto nos_local = this->copiarNos();
     
     // Inicializações
-     int origem = this->comeco_fim.first;
+    int origem = this->comeco_fim.first;
     int destino_final = this->comeco_fim.second;
     std::vector<int> solucao;
     std::vector<std::pair<int, float>> candidatos;
@@ -373,8 +381,8 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
             // Candidato válido
             if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel){
-                
-		            solucao.push_back(no_ref.id);
+                if(!no_ref.is_hotel)
+		              solucao.push_back(no_ref.id);
                 nos_local[no_ref.id].visitado = true;
                 int caraRemovido = no_ref.id;
                 if(!no_ref.is_hotel)
@@ -398,7 +406,8 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
                     escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
                     if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
-                        solucao.push_back(no_ref.id);
+                        if(!no_ref.is_hotel)
+                          solucao.push_back(no_ref.id);
                         nos_local[no_ref.id].visitado = true;
                         int caraRemovido = no_ref.id;
                         if(!no_ref.is_hotel)
@@ -431,8 +440,8 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
             // Não está no último dia
             // Candidato válido
             if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
-
-                solucao.push_back(no_ref.id);
+                if(!no_ref.is_hotel)
+                  solucao.push_back(no_ref.id);
                 nos_local[no_ref.id].visitado = true;
                 int caraRemovido = no_ref.id;
                 if(!no_ref.is_hotel)
@@ -457,7 +466,8 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
                     escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
                     if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
-                      solucao.push_back(no_ref.id);
+                      if(!no_ref.is_hotel)
+                        solucao.push_back(no_ref.id);
                       nos_local[no_ref.id].visitado = true;
                       int caraRemovido = no_ref.id;
                       if(!no_ref.is_hotel)
@@ -481,10 +491,12 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
                 // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
                 if (alpha_local >= 0.6) {
                     encerra_dia(solucao, no_ref);
-                    this->removerNo(no_ref.id);
+                    //this->removerNo(no_ref.id);
+                    std::cout<<"\nMudei de DIA\n";
                     no_ref = this->nos[solucao.at(solucao.size()-1)];
                     ++dias_decorridos;
                     tempo_restante = this->tempos_limites_dias[dias_decorridos];
+                    
                 }
             }
         }

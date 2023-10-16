@@ -42,6 +42,8 @@ int main(int argc, const char* argv[])
     instancias.push_back("../instances/SET2-6-4/66-50-6-4.ophs");
     instancias.push_back("../instances/SET2-6-4/100-35-6-4.ophs");
 
+    // Útimas 5 instâncias
+
     instancias.push_back("../instances/SET3-10-4/66-125-10-4.ophs");
     instancias.push_back("../instances/SET3-10-4/100-200-10-4.ophs"); 
 
@@ -64,12 +66,16 @@ int main(int argc, const char* argv[])
 
         Grafo grafo = Grafo(instancia);
 
-        auto [solucao, custo_solucao] = grafo.geraSolucaoZetsubou();
+        //auto [solucao, custo_solucao] = grafo.geraSolucaoZetsubou();
 
-        custosIniciais.push_back(custo_solucao);
+        //custosIniciais.push_back(custo_solucao);
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 1; i++)
         {
+            auto [solucao, custo_solucao] = grafo.geraSolucao(0.05);
+
+            custosIniciais.push_back(custo_solucao);
+
             auto [solucaoVNS, custo_final] = VNS(grafo,grafo.quantidadeNos(),10,solucao);
 
             custosFinais.push_back(custo_final);
