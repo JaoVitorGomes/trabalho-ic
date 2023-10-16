@@ -81,10 +81,9 @@ void performVNSMove(Grafo grafo,int ids, vector<int> &solution)
 }
 
 // Function to implement the VNS algorithm
-vector<int> VNS(Grafo grafo, int ids, int maxIterations)
+pair<vector<int>,int> VNS(Grafo grafo, int ids, int maxIterations, vector<int> solution)
 {
-    auto solucao = grafo.geraSolucao(0.10);
-    vector<int> solution = solucao.first;
+
     int custo_atual = grafo.calculaCusto(solution);
 
     for (int i = 0; i < maxIterations; i++)
@@ -102,7 +101,7 @@ vector<int> VNS(Grafo grafo, int ids, int maxIterations)
             break;
         }
     }
-    auto custo = grafo.calculaCusto(solucao.first);
+    auto custo = grafo.calculaCusto(solution);
     std::cout<<"\nCusto solucao: "<<custo;
-    return solution;
+    return make_pair(solution, custo);
 }
