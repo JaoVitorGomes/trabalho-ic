@@ -8,9 +8,29 @@
 int main(int argc, const char* argv[])
 {   
     std::vector<std::string> instancias;
-
+    
+    
     instancias.push_back("../instances/SET1-1-2/64-45-1-2.ophs");
     instancias.push_back("../instances/SET1-1-2/100-35-1-2.ophs");
+    
+    instancias.push_back("../instances/SET5-12-6/66-130-12-6.ophs");
+    instancias.push_back("../instances/SET5-12-6/100-240-12-6.ophs");
+
+    instancias.push_back("../instances/SET5-15-4/64-80-15-4.ophs");  
+    instancias.push_back("../instances/SET5-15-4/100-90-15-4.ophs");
+
+    instancias.push_back("../instances/SET5-15-5/66-130-15-5.ophs");
+    instancias.push_back("../instances/SET5-15-5/100-170-15-5.ophs");
+
+    instancias.push_back("../instances/SET5-15-6/100-110-15-6.ophs");
+    instancias.push_back("../instances/SET5-15-6/100-200-15-6.ophs");
+
+    instancias.push_back("../instances/SET5-15-8/100-120-15-8.ophs");
+    instancias.push_back("../instances/SET5-15-8/100-240-15-8.ophs");
+
+    instancias.push_back("../instances/SET5-15-10/100-150-15-10.ophs");
+    instancias.push_back("../instances/SET5-15-10/100-190-15-10.ophs");
+
     
     instancias.push_back("../instances/SET1-2-3/66-125-2-3.ophs");
     instancias.push_back("../instances/SET1-2-3/102-60-2-3.ophs");
@@ -39,23 +59,7 @@ int main(int argc, const char* argv[])
     instancias.push_back("../instances/SET5-12-4/100-50-12-4.ophs"); 
     instancias.push_back("../instances/SET5-12-4/100-130-12-4.ophs");
 
-    instancias.push_back("../instances/SET5-12-6/66-130-12-6.ophs");
-    instancias.push_back("../instances/SET5-12-6/100-240-12-6.ophs");
 
-    instancias.push_back("../instances/SET5-15-4/64-80-15-4.ophs");  
-    instancias.push_back("../instances/SET5-15-4/100-90-15-4.ophs");
-
-    instancias.push_back("../instances/SET5-15-5/66-130-15-5.ophs");
-    instancias.push_back("../instances/SET5-15-5/100-170-15-5.ophs");
-
-    instancias.push_back("../instances/SET5-15-6/100-110-15-6.ophs");
-    instancias.push_back("../instances/SET5-15-6/100-200-15-6.ophs");
-
-    instancias.push_back("../instances/SET5-15-8/100-120-15-8.ophs");
-    instancias.push_back("../instances/SET5-15-8/100-240-15-8.ophs");
-
-    instancias.push_back("../instances/SET5-15-10/100-150-15-10.ophs");
-    instancias.push_back("../instances/SET5-15-10/100-190-15-10.ophs");
     
     int set = 1;
     int id_instancia = 1;
@@ -64,15 +68,15 @@ int main(int argc, const char* argv[])
 
         Grafo grafo = Grafo(instancia);
 
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 10; i++)
         {
             auto [solucao, custo_solucao] = grafo.geraSolucao(0.05);
 
             custosIniciais.push_back(custo_solucao);
 
-            auto [solucaoVNS, custo_final] = VNS(grafo,grafo.quantidadeNos(),10,solucao);
+            //auto [solucaoVNS, custo_final] = VNS(grafo,grafo.quantidadeNos(),10,solucao);
 
-            custosFinais.push_back(custo_final);
+            custosFinais.push_back(custo_solucao);
 
         }
 
@@ -100,12 +104,14 @@ int main(int argc, const char* argv[])
         else
             std::cerr << "Erro ao abrir o arquivo para escrita." << std::endl;
 
+        custosIniciais.clear();
+        custosFinais.clear();
         // Atualiza a instância tratada
         id_instancia++;
         
         // Controla quando o set reseta
         if(id_instancia==3){
-            std::cout<<"Terminei o SET"<<set<<"\n";
+            std::cout<<"\nTerminei o SET"<<set<<"\n";
             set++;
             id_instancia = 1;
             

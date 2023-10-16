@@ -121,7 +121,7 @@ Grafo::Grafo(std::string filename){
         std::cout<<"\nId hotel: "<<elemento;
 
       //std::cout<<"\nNumero de nos: "<< this->ordem;
-      
+      ids_hoteis
       //this->printa_arestas();
     */
 }
@@ -183,9 +183,26 @@ void Grafo::adicionarAresta(int origem, int destino, float peso)
   
 }
 
-bool Grafo::removerNo(int id)
-{
-    return true;
+bool Grafo::removerNo(int id) {
+  auto it = nos.find(id);
+  if (it == nos.end())
+    return false;
+
+  // Remover todas as arestas que saem do nó removido
+  for (auto& [_, no] : nos) {
+    no.arestas.remove_if([id](const Aresta& aresta) { return aresta.id == id; });
+  }
+
+  // Remover todas as arestas que chegam ao nó removido
+  for (auto& [_, no] : nos) {
+    no.arestas.remove_if([id](const Aresta& aresta) { return aresta.id == id; });
+  }
+
+  nos.erase(it);
+
+  this->ordem = this->ordem - 1;
+
+  return true;
 }
 
 void Grafo::removerAresta(int origem, int destino)
@@ -290,7 +307,21 @@ void Grafo::encerra_dia(std::vector<int>& solucao, Vertice& no_ref){
     }
 }
 
+ void Grafo::recalcula_tudo(){
+
+  // Preenche a distância mais próxima até um hotel
+    for(auto& elemento : this->nos)
+      this->acha_hotel_mais_perto(elemento.second);
+    
+    // Preenche a distância mais próxima até o destino final
+    for(auto& elemento : this->nos)
+      this->acha_caminho_mais_proximo_final_hotel(elemento.second);
+
+ }
+
 std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
+
+    auto nos_local = this->copiarNos();
     
     // Inicializações
     int origem = this->comeco_fim.first;
@@ -300,8 +331,8 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
     int dias_decorridos = 0;
     float tempo_restante = this->tempos_limites_dias[dias_decorridos];
     Vertice& no_ref = nos[origem];
-    std::vector<std::pair<int, float>> candidatos(ordem);
-    std::vector<int> pesos_arestas(ordem);
+    std::vector<std::pair<int, float>> candidatos;
+    std::vector<float> pesos_arestas;
     int pos_candidato = 0;
 
     // Começo do loop
@@ -315,8 +346,10 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
         pesos_arestas.clear();
 
         // Preenche a lista de candidatos
-        for (auto& [id_vizinho, peso_aresta] : no_ref.arestas) {
+        for (auto [id_vizinho, peso_aresta] : no_ref.arestas) {
             Vertice& vizinho = nos[id_vizinho];
+            if(id_vizinho==no_ref.id)
+              continue;
             float pontuacao_candidato = (vizinho.peso) / peso_aresta;
             candidatos.push_back(std::make_pair(id_vizinho, pontuacao_candidato));
             pesos_arestas.push_back(peso_aresta);
@@ -335,16 +368,18 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
         // Último dia
         if (dias_decorridos + 1 == this->tam_trip) {
             // Candidato válido
-            if (!nos[candidatos[candidato_escolhido].first].visitado && no_ref.cost_last_destiny + pesos_arestas[candidato_escolhido] <= tempo_restante){
+            if (!nos[candidatos[candidato_escolhido].first].visitado && no_ref.cost_last_destiny + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel){
                 
-                if(!no_ref.visitado){
+                if(!no_ref.visitado || no_ref.is_hotel){
                   solucao.push_back(no_ref.id);
-                  no_ref.visitado = true;
-
+                  nos_local[no_ref.id].visitado = true;
+                  if(!no_ref.is_hotel)
+                    this->removerNo(no_ref.id);
                 }
                 no_ref = nos[candidatos[candidato_escolhido].first];
                 // Pega o peso da aresta e subtrai do tempo restante
                 tempo_restante -= pesos_arestas[candidato_escolhido];
+                this->recalcula_tudo();
 
             } else {
                 // Se não achar algum candidato de primeira
@@ -354,15 +389,17 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
                     // Sorteia um candidato
                     candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
-                    if (!nos[candidatos[candidato_escolhido].first].visitado && no_ref.cost_last_destiny + pesos_arestas[candidato_escolhido] <= tempo_restante) {
-                        if(!no_ref.visitado){
+                    if (!nos[candidatos[candidato_escolhido].first].visitado && no_ref.cost_last_destiny + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel) {
+                        if(!no_ref.visitado || no_ref.is_hotel){
                           solucao.push_back(no_ref.id);
-                          no_ref.visitado = true;
-
+                          nos_local[no_ref.id].visitado = true;
+                          if(!no_ref.is_hotel)
+                            this->removerNo(no_ref.id);
                         }
                         no_ref = nos[candidatos[candidato_escolhido].first];
                         // Pega o peso da aresta e subtrai do tempo restante
                         tempo_restante -= pesos_arestas[candidato_escolhido];
+                        this->recalcula_tudo();
                         buscando_candidato = false;
                     } else {
                         alpha_local += 0.05;
@@ -378,14 +415,17 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
         } else {
             // Não está no último dia
             // Candidato válido
-            if (!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel + pesos_arestas[candidato_escolhido] <= tempo_restante) {
-                if(!no_ref.visitado){
+            if (!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel) {
+                if(!no_ref.visitado || no_ref.is_hotel){
                   solucao.push_back(no_ref.id);
-                  no_ref.visitado = true;
+                  nos_local[no_ref.id].visitado = true;
+                  if(!no_ref.is_hotel)
+                    this->removerNo(no_ref.id);
                 }
                 no_ref = nos[candidatos[candidato_escolhido].first];
                 // Pega o peso da aresta e subtrai do tempo restante
                 tempo_restante -= pesos_arestas[candidato_escolhido];
+                this->recalcula_tudo();
             } else {
                 // Se não achar algum candidato de primeira
                 bool buscando_candidato = true;
@@ -394,15 +434,17 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
                     // Sorteia um candidato
                     candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
-                    if (!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel + pesos_arestas[candidato_escolhido] <= tempo_restante) {
-                        if(!no_ref.visitado){
-                          solucao.push_back(no_ref.id);
-                          no_ref.visitado = true;
-
-                        }
+                    if (!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel) {
+                      if(!no_ref.visitado || no_ref.is_hotel){
+                        solucao.push_back(no_ref.id);
+                        nos_local[no_ref.id].visitado = true;
+                        if(!no_ref.is_hotel)
+                          this->removerNo(no_ref.id);
+                      }
                         no_ref = nos[candidatos[candidato_escolhido].first];
                         // Pega o peso da aresta e subtrai do tempo restante
                         tempo_restante -= pesos_arestas[candidato_escolhido];
+                        this->recalcula_tudo();
                         buscando_candidato = false;
                     } else {
                         alpha_local += 0.05;
@@ -425,6 +467,7 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
     for (auto& elemento : solucao)
         pontuacao_solucao += nos[elemento].peso;
 
+    this->nos = nos_local;
     return std::make_pair(solucao, pontuacao_solucao);
 }
 

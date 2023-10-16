@@ -24,11 +24,16 @@ public:
   std::pair<std::vector<int>, int> geraSolucao(double alpha);
   void encerra_dia(std::vector<int>& solucao, Vertice& no_ref);
   void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios); 
-
+  void recalcula_tudo();
   void printa_arestas();   
   bool validarSolucao(std::vector<int> solucao);
   int calculaCusto(std::vector<int> solucao);
   int quantidadeNos();
+  std::unordered_map<int, Vertice> copiarNos() {
+    return nos;
+  }
+
+
 
 private:
   std::unordered_map<int, Vertice> nos{};
