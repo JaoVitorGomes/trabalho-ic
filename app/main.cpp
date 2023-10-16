@@ -9,10 +9,12 @@ int main(int argc, const char* argv[])
 {   
     std::vector<std::string> instancias;
     
+
+
     
     instancias.push_back("../instances/SET1-1-2/64-45-1-2.ophs");
     instancias.push_back("../instances/SET1-1-2/100-35-1-2.ophs");
-    
+
     instancias.push_back("../instances/SET5-12-6/66-130-12-6.ophs");
     instancias.push_back("../instances/SET5-12-6/100-240-12-6.ophs");
 
@@ -31,7 +33,6 @@ int main(int argc, const char* argv[])
     instancias.push_back("../instances/SET5-15-10/100-150-15-10.ophs");
     instancias.push_back("../instances/SET5-15-10/100-190-15-10.ophs");
 
-    
     instancias.push_back("../instances/SET1-2-3/66-125-2-3.ophs");
     instancias.push_back("../instances/SET1-2-3/102-60-2-3.ophs");
 
@@ -44,7 +45,7 @@ int main(int argc, const char* argv[])
     instancias.push_back("../instances/SET2-6-4/66-50-6-4.ophs");
     instancias.push_back("../instances/SET2-6-4/100-35-6-4.ophs");
 
-    instancias.push_back("../instances/SET3-10-4/66-125-10-4.ophs");
+        instancias.push_back("../instances/SET3-10-4/66-125-10-4.ophs");
     instancias.push_back("../instances/SET3-10-4/100-200-10-4.ophs"); 
 
     instancias.push_back("../instances/SET3-12-5/64-75-12-5.ophs");
@@ -58,6 +59,8 @@ int main(int argc, const char* argv[])
 
     instancias.push_back("../instances/SET5-12-4/100-50-12-4.ophs"); 
     instancias.push_back("../instances/SET5-12-4/100-130-12-4.ophs");
+
+
 
 
     

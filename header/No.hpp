@@ -20,7 +20,7 @@ struct Vertice{
     int cost_nearest_hotel;
     std::vector<int> path_to_last_destiny;
     int cost_last_destiny;
-    std::pair<int,int> coord;
+    std::pair<float,float> coord;
 };
 
 

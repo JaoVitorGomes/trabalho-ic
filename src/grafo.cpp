@@ -54,13 +54,16 @@ Grafo::Grafo(std::string filename){
     // Pega linha em branco
     getline(file,line);
 
+    std::vector<float> dadosNo;
+
     // Adicionando os nós
     while (getline(file, line)) {
       std::istringstream conversor(line);
-      int x, y , peso;
-      conversor >> x >> y >> peso;
-      coordenadas_nos.push_back(std::make_pair(x, y));
-      pesos.push_back(peso);
+      while (std::getline(conversor, token, '\t'))
+        dadosNo.push_back(std::stof(token));
+      coordenadas_nos.push_back(std::make_pair(dadosNo[0], dadosNo[1]));
+      pesos.push_back(dadosNo[2]);
+      dadosNo.clear();
 
     }
 
@@ -108,15 +111,16 @@ Grafo::Grafo(std::string filename){
     // TESTES
     /*
       // Printando hotel
-      for (auto& elemento : this->nos){
+      for(int i=0; i<this->nos.size(); i++){
 
-        std::cout << "\nNo: "<<elemento.second.id<< " Custo para o hotel mais proximo: "<<elemento.second.cost_nearest_hotel;
-        std::cout<<"\nCaminho para o hotel mais proximo:\n";
+        std::cout << "\nNo: "<<this->nos[i].id<< " Custo para o hotel mais proximo: "<<this->nos[i].cost_nearest_hotel;
+        // std::cout<<"\nCaminho para o hotel mais proximo:\n";
 
-        for(auto& elemento_caminho : elemento.second.path_nearest_hotel)
-          std::cout<<elemento_caminho << "->";
+        //for(auto& elemento_caminho : elemento.second.path_nearest_hotel)
+          //std::cout<<elemento_caminho << "->";
 
       }
+      
       for(auto& elemento : this->ids_hoteis)
         std::cout<<"\nId hotel: "<<elemento;
 
@@ -124,6 +128,7 @@ Grafo::Grafo(std::string filename){
       ids_hoteis
       //this->printa_arestas();
     */
+   return;
 }
 
 void Grafo::adicionarNo(int id, Vertice vertice)
@@ -184,26 +189,25 @@ void Grafo::adicionarAresta(int origem, int destino, float peso)
 }
 
 bool Grafo::removerNo(int id) {
-  auto it = nos.find(id);
-  if (it == nos.end())
-    return false;
 
-  // Remover todas as arestas que saem do nó removido
-  for (auto& [_, no] : nos) {
-    no.arestas.remove_if([id](const Aresta& aresta) { return aresta.id == id; });
-  }
+      // Crie uma função lambda que verifica se a aresta deve ser removida
+      auto shouldRemoveAresta = [id](const Aresta& aresta) { return aresta.id == id; };
 
-  // Remover todas as arestas que chegam ao nó removido
-  for (auto& [_, no] : nos) {
-    no.arestas.remove_if([id](const Aresta& aresta) { return aresta.id == id; });
-  }
+      // Itera sobre todos os nós do grafo
+      for (auto& [_, no] : nos) {
+          // Use a função std::remove_if seguida de no.arestas.erase para remover as arestas que atendem à condição
+          no.arestas.remove_if(shouldRemoveAresta);
+      }
+  
 
-  nos.erase(it);
+    nos.erase(id);
 
-  this->ordem = this->ordem - 1;
+    this->ordem = this->ordem - 1;
 
-  return true;
+    return true;
 }
+
+
 
 void Grafo::removerAresta(int origem, int destino)
 {
@@ -324,16 +328,15 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
     auto nos_local = this->copiarNos();
     
     // Inicializações
-    int origem = this->comeco_fim.first;
+     int origem = this->comeco_fim.first;
     int destino_final = this->comeco_fim.second;
     std::vector<int> solucao;
+    std::vector<std::pair<int, float>> candidatos;
+    std::vector<float> pesos_arestas;
     bool fim_viagem = false;
     int dias_decorridos = 0;
     float tempo_restante = this->tempos_limites_dias[dias_decorridos];
-    Vertice& no_ref = nos[origem];
-    std::vector<std::pair<int, float>> candidatos;
-    std::vector<float> pesos_arestas;
-    int pos_candidato = 0;
+    Vertice no_ref = nos[origem];
 
     // Começo do loop
     while (!fim_viagem) {
@@ -363,47 +366,59 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
         );
 
         // Sorteia um candidato
-        auto candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
+        auto escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
         // Último dia
         if (dias_decorridos + 1 == this->tam_trip) {
+
             // Candidato válido
-            if (!nos[candidatos[candidato_escolhido].first].visitado && no_ref.cost_last_destiny + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel){
+            if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel){
                 
-                if(!no_ref.visitado || no_ref.is_hotel){
-                  solucao.push_back(no_ref.id);
-                  nos_local[no_ref.id].visitado = true;
-                  if(!no_ref.is_hotel)
-                    this->removerNo(no_ref.id);
-                }
-                no_ref = nos[candidatos[candidato_escolhido].first];
-                // Pega o peso da aresta e subtrai do tempo restante
-                tempo_restante -= pesos_arestas[candidato_escolhido];
+		            solucao.push_back(no_ref.id);
+                nos_local[no_ref.id].visitado = true;
+                int caraRemovido = no_ref.id;
+                if(!no_ref.is_hotel)
+                  this->removerNo(no_ref.id);
+
+                if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                  std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
+                else
+                  std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+
+                no_ref = nos[candidatos[escolhido].first];
+                tempo_restante -= pesos_arestas[escolhido];
                 this->recalcula_tudo();
 
-            } else {
+            } 
+            else {
                 // Se não achar algum candidato de primeira
                 bool buscando_candidato = true;
 
                 while (alpha_local < 0.6 && buscando_candidato) {
                     // Sorteia um candidato
-                    candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
+                    escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
-                    if (!nos[candidatos[candidato_escolhido].first].visitado && no_ref.cost_last_destiny + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel) {
-                        if(!no_ref.visitado || no_ref.is_hotel){
-                          solucao.push_back(no_ref.id);
-                          nos_local[no_ref.id].visitado = true;
-                          if(!no_ref.is_hotel)
-                            this->removerNo(no_ref.id);
-                        }
-                        no_ref = nos[candidatos[candidato_escolhido].first];
-                        // Pega o peso da aresta e subtrai do tempo restante
-                        tempo_restante -= pesos_arestas[candidato_escolhido];
-                        this->recalcula_tudo();
-                        buscando_candidato = false;
-                    } else {
+                    if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
+                        solucao.push_back(no_ref.id);
+                    nos_local[no_ref.id].visitado = true;
+                    int caraRemovido = no_ref.id;
+                    if(!no_ref.is_hotel)
+                        this->removerNo(no_ref.id);
+
+                    if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                        std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
+                    else
+                        std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+
+                    no_ref = nos[candidatos[escolhido].first];
+                    tempo_restante -= pesos_arestas[escolhido];
+                    this->recalcula_tudo();
+                    buscando_candidato = false;
+
+                      } 
+		                  else 
                         alpha_local += 0.05;
-                    }
+                    
                 }
 
                 // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
@@ -412,62 +427,253 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(double alpha){
                     fim_viagem = true;
                 }
             }
-        } else {
+        } 
+        else {
             // Não está no último dia
             // Candidato válido
-            if (!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel) {
-                if(!no_ref.visitado || no_ref.is_hotel){
-                  solucao.push_back(no_ref.id);
-                  nos_local[no_ref.id].visitado = true;
-                  if(!no_ref.is_hotel)
-                    this->removerNo(no_ref.id);
-                }
-                no_ref = nos[candidatos[candidato_escolhido].first];
-                // Pega o peso da aresta e subtrai do tempo restante
-                tempo_restante -= pesos_arestas[candidato_escolhido];
+            if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
+
+                solucao.push_back(no_ref.id);
+                nos_local[no_ref.id].visitado = true;
+                int caraRemovido = no_ref.id;
+                if(!no_ref.is_hotel)
+                  	this->removerNo(no_ref.id);
+
+                if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                  std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
+                else
+                  std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+
+                no_ref = nos[candidatos[escolhido].first];
+                tempo_restante -= pesos_arestas[escolhido];
                 this->recalcula_tudo();
-            } else {
+            } 
+	    else {
                 // Se não achar algum candidato de primeira
                 bool buscando_candidato = true;
 
                 while (alpha_local < 0.6 && buscando_candidato) {
                     // Sorteia um candidato
-                    candidato_escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
+                    escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
-                    if (!nos[candidatos[candidato_escolhido].first].visitado && nos[candidatos[candidato_escolhido].first].cost_nearest_hotel + pesos_arestas[candidato_escolhido] <= tempo_restante && !nos[candidatos[candidato_escolhido].first].is_hotel) {
-                      if(!no_ref.visitado || no_ref.is_hotel){
-                        solucao.push_back(no_ref.id);
-                        nos_local[no_ref.id].visitado = true;
-                        if(!no_ref.is_hotel)
+                    if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
+                      solucao.push_back(no_ref.id);
+                      nos_local[no_ref.id].visitado = true;
+                      int caraRemovido = no_ref.id;
+                      if(!no_ref.is_hotel)
                           this->removerNo(no_ref.id);
-                      }
-                        no_ref = nos[candidatos[candidato_escolhido].first];
-                        // Pega o peso da aresta e subtrai do tempo restante
-                        tempo_restante -= pesos_arestas[candidato_escolhido];
-                        this->recalcula_tudo();
-                        buscando_candidato = false;
-                    } else {
+
+                      if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                          std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
+                      else
+                        std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+
+                      no_ref = nos[candidatos[escolhido].first];
+                      tempo_restante -= pesos_arestas[escolhido];
+                      this->recalcula_tudo();
+                      buscando_candidato = false;
+
+                    } 
+                    else
                         alpha_local += 0.05;
-                    }
                 }
 
                 // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
                 if (alpha_local >= 0.6) {
                     encerra_dia(solucao, no_ref);
+                    this->removerNo(no_ref.id);
+                    no_ref = this->nos[solucao.at(solucao.size()-1)];
                     ++dias_decorridos;
                     tempo_restante = this->tempos_limites_dias[dias_decorridos];
-                    // Atualiza o no_ref para partir do hotel onde parou no dia anterior
-                    no_ref = nos[solucao[solucao.size() - 1]];
                 }
             }
         }
     }
 
     int pontuacao_solucao = 0;
+    this->nos = nos_local;
+    for (auto& elemento : solucao)
+        pontuacao_solucao += this->nos[elemento].peso;
+    return std::make_pair(solucao, pontuacao_solucao);
+
+}
+
+bool Grafo::verificarNoRemovidoOuArestaApontaPara(int id) {
+    // Verifica se o nó com o ID fornecido ainda existe no grafo
+
+    // Verifica se alguma aresta aponta para o nó com o ID fornecido
+    for (auto& par : nos) {
+        Vertice& vertice = par.second;
+        for (const Aresta& aresta : vertice.arestas) {
+            if (aresta.id == id) {
+                return true; // Existe uma aresta que aponta para o nó
+            }
+        }
+    }
+
+    // Se o nó não foi encontrado e nenhuma aresta aponta para ele, ele não está mais no grafo
+    return false;
+}
+
+
+std::pair<std::vector<int>, int> Grafo::geraSolucaoZetsubou(){
+
+    auto nos_local = this->copiarNos();
+    
+    // Inicializações
+    int origem = this->comeco_fim.first;
+    int destino_final = this->comeco_fim.second;
+    std::vector<int> solucao;
+    std::vector<std::pair<int, float>> candidatos;
+    std::vector<float> pesos_arestas;
+    bool fim_viagem = false;
+    int dias_decorridos = 0;
+    float tempo_restante = this->tempos_limites_dias[dias_decorridos];
+    Vertice no_ref = nos[origem];
+
+    // Começo do loop
+    while (!fim_viagem) {
+
+        // Limpa a lista de candidatos a cada iteração
+        candidatos.clear();
+        pesos_arestas.clear();
+
+        // Preenche a lista de candidatos
+        for (auto [id_vizinho, peso_aresta] : no_ref.arestas) {
+            Vertice& vizinho = nos[id_vizinho];
+            if(id_vizinho==no_ref.id)
+              continue;
+            float pontuacao_candidato = (vizinho.peso) / peso_aresta;
+            candidatos.push_back(std::make_pair(id_vizinho, pontuacao_candidato));
+            pesos_arestas.push_back(peso_aresta);
+        }
+
+        // Ordena os candidatos em ordem decrescente
+        std::sort(candidatos.begin(), candidatos.end(),
+            [](const std::pair<int, float>& a, const std::pair<int, float>& b) {
+                return a.second > b.second;
+            }
+        );
+
+        int escolhido = candidatos[0].first;
+       
+        // Último dia
+        if (dias_decorridos + 1 == this->tam_trip) {
+            // Candidato válido
+            if (nos[escolhido].cost_last_destiny + pesos_arestas[0] <= tempo_restante && !nos[escolhido].is_hotel){
+                
+                solucao.push_back(no_ref.id);
+                nos_local[no_ref.id].visitado = true;
+                int caraRemovido = no_ref.id;
+                if(!no_ref.is_hotel)
+                  this->removerNo(no_ref.id);
+
+                if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                  std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
+                else
+                  std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+
+                no_ref = nos[escolhido];
+                tempo_restante -= pesos_arestas[0];
+                this->recalcula_tudo();
+
+            } 
+            else {
+                int i;
+                for (i = 1; i < candidatos.size(); i++){
+
+                    escolhido = candidatos[i].first;
+
+                    if (nos[escolhido].cost_last_destiny + pesos_arestas[i] <= tempo_restante && !nos[escolhido].is_hotel) {
+                        
+                        solucao.push_back(no_ref.id);
+                        nos_local[no_ref.id].visitado = true;
+                        int caraRemovido = no_ref.id;
+                        if(!no_ref.is_hotel)
+                          this->removerNo(no_ref.id);
+                        if (!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                          std::cout << "\nRemovi de fato tudo do " << caraRemovido << std::endl;
+                        else
+                          std::cout << "\nNAO Removi de fato tudo do " << caraRemovido << std::endl;
+                        no_ref = nos[escolhido];
+                        // Pega o peso da aresta e subtrai do tempo restante
+                        tempo_restante -= pesos_arestas[i];
+                        this->recalcula_tudo();
+                        break;
+                    } 
+                }
+
+                // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
+                if (i == candidatos.size()) {
+                    encerra_viagem(solucao, no_ref);
+                    fim_viagem = true;
+                }
+            }
+        } 
+        else {
+            // Não está no último dia
+            // Candidato válido
+            if (nos[escolhido].cost_nearest_hotel + pesos_arestas[0] <= tempo_restante && !nos[escolhido].is_hotel) {
+                
+                solucao.push_back(no_ref.id);
+                nos_local[no_ref.id].visitado = true;
+                int caraRemovido = no_ref.id;
+                if(!no_ref.is_hotel)
+                  this->removerNo(no_ref.id);
+                if (!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                  std::cout << "\nRemovi de fato tudo do " << caraRemovido << std::endl;
+                else
+                  std::cout << "\nNAO Removi de fato tudo do " << caraRemovido << std::endl;
+                no_ref = nos[escolhido];
+                // Pega o peso da aresta e subtrai do tempo restante
+                tempo_restante -= pesos_arestas[0];
+                this->recalcula_tudo();
+
+            } 
+            else {
+
+                int j = 1;
+                for(j = 1; j<candidatos.size(); j++){
+
+                    escolhido = candidatos[j].first;
+
+                    if (nos[escolhido].cost_nearest_hotel + pesos_arestas[j] <= tempo_restante && !nos[escolhido].is_hotel) {
+
+                        solucao.push_back(no_ref.id);
+                        nos_local[no_ref.id].visitado = true;
+                        int caraRemovido = no_ref.id;
+                        if(!no_ref.is_hotel)
+                          this->removerNo(no_ref.id);
+                        if (!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
+                          std::cout << "\nRemovi de fato tudo do " << caraRemovido << std::endl;
+                        else
+                          std::cout << "\nNAO Removi de fato tudo do " << caraRemovido << std::endl;
+                        no_ref = nos[escolhido];
+                        // Pega o peso da aresta e subtrai do tempo restante
+                        tempo_restante -= pesos_arestas[j];
+                        this->recalcula_tudo();
+                        break;
+
+                    }
+                }
+
+                // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
+                if (j == candidatos.size()) {
+                    encerra_dia(solucao, no_ref);
+                    this->removerNo(no_ref.id);
+                    no_ref = this->nos[solucao.at(solucao.size()-1)];
+                    dias_decorridos++;
+                    tempo_restante = this->tempos_limites_dias[dias_decorridos];
+                }
+            }
+        }
+    }
+
+    int pontuacao_solucao = 0;
+    this->nos = nos_local;
     for (auto& elemento : solucao)
         pontuacao_solucao += nos[elemento].peso;
-
-    this->nos = nos_local;
+ 
     return std::make_pair(solucao, pontuacao_solucao);
 }
 
