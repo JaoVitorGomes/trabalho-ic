@@ -230,8 +230,6 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
     
     // Inicializações
     std::vector<int> solucao;
-    std::vector<std::pair<int, float>> candidatos;
-    std::vector<float> pesos_arestas;
 
     int origem = this->comeco_fim.first;
     int destino_final = this->comeco_fim.second;
@@ -239,26 +237,52 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
     int dias_decorridos = 0;
 
     float tempo_restante = this->tempos_limites_dias[dias_decorridos];
-    Vertice no_ref = nos[origem];
+    Vertice& no_ref = nos[origem];
 
     // Começo do loop
     while (!fim_viagem) {
+
+        std::cout<<"\nNo de referencia: "<<no_ref.id<<" Arestas do no de referencia:\n";
+        
+        for(auto aresta : no_ref.arestas)
+          std::cout<<aresta.id<<"->";
+
+        std::cout<<"\n";
+
+        std::cout<<"\n Solucao ate o momento: \n";
+        std::cout<<"[ ";
+        for(auto elemento : solucao)
+          std::cout<<elemento<<" ";
+        std::cout<<" ]\n";
 
         // Permite expansão ocasional do alpha na busca por candidatos
         float alpha_local = alpha;
 
         // Limpa a lista de candidatos a cada iteração
-        candidatos.clear();
-        pesos_arestas.clear();
+        std::vector<std::pair<int, float>> candidatos;
+        std::vector<float> pesos_arestas;
+
+        // Se não houver arestas saindo do nó de referência termina a viagem
+        if (no_ref.arestas.empty()){
+            fim_viagem = true;
+            continue;
+        }
+        
 
         // Preenche a lista de candidatos
         for (auto [id_vizinho, peso_aresta] : no_ref.arestas) {
             Vertice& vizinho = nos[id_vizinho];
-            if(id_vizinho==no_ref.id)
+            if(id_vizinho==no_ref.id || nos[id_vizinho].visitado)
               continue;
             float pontuacao_candidato = (vizinho.peso) / peso_aresta;
             candidatos.push_back(std::make_pair(id_vizinho, pontuacao_candidato));
             pesos_arestas.push_back(peso_aresta);
+        }
+
+        // Se não houver candidatos, encerra tudo
+        if(candidatos.empty()){
+          fim_viagem = true;
+          continue;
         }
 
         // Ordena os candidatos em ordem decrescente
@@ -267,28 +291,30 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
                 return a.second > b.second;
             }
         );
+        std::cout<<"\nLista de candidatos ORDENADA: \n";
+        std::cout<<"{ ";
+        for(auto elemento : candidatos)
+          std::cout<<elemento.first<<" ";
+        std::cout<<" }\n";
 
         // Sorteia um candidato
         auto escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
+
+        std::cout<<"Antes de saber se eh ou nao o ultimo dia: \n";        
+        std::cout<<"\nId escolhido em CANDIDATOS: "<<escolhido;
+        std::cout<<"\nNO DE FATO ESCOLHIDO: "<<nos[candidatos[escolhido].first].id;
 
         // ÚLTIMO DIA
         if (dias_decorridos + 1 == this->tam_trip) {
 
             // Candidato válido
             if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante){
-                
+                std::cout<<"\nULTIMO DIA IF\n";        
+                std::cout<<"\nId escolhido em CANDIDATOS: "<<escolhido;
+                std::cout<<"\nNO DE FATO ESCOLHIDO: "<<nos[candidatos[escolhido].first].id;
 		            solucao.push_back(no_ref.id);
-
-                int caraRemovido = no_ref.id;
-
-                if(!no_ref.is_hotel)
-                  this->removerNo(no_ref.id);
-
-                if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
-                  std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
-                else
-                  std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
-
+                no_ref.visitado = true;
+                nos[no_ref.id].visitado = true;
                 no_ref = nos[candidatos[escolhido].first];
                 tempo_restante -= pesos_arestas[escolhido];
 
@@ -298,22 +324,20 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
                 bool buscando_candidato = true;
 
                 while (alpha_local < 0.6 && buscando_candidato) {
-                    // Sorteia um candidato
+                    
                     escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
+
+                    std::cout<<"\nULTIMO DIA ELSE\n";        
+                    std::cout<<"\nId escolhido em CANDIDATOS: "<<escolhido;
+                    std::cout<<"\nNO DE FATO ESCOLHIDO: "<<nos[candidatos[escolhido].first].id;
+                    std::cout<<"\nAlpha Local: "<<alpha_local<<"\n";
+
 
                     if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante) {
                         
                         solucao.push_back(no_ref.id);
-
-                        int caraRemovido = no_ref.id;
-
-                        if(!no_ref.is_hotel)
-                            this->removerNo(no_ref.id);
-
-                        if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
-                            std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
-                        else
-                            std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+                        no_ref.visitado = true;
+                        nos[no_ref.id].visitado = true;
 
                         no_ref = nos[candidatos[escolhido].first];
                         tempo_restante -= pesos_arestas[escolhido];
@@ -327,11 +351,18 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
                     
                 }
 
+                std::cout<<"\nSai do while, alpha local = "<<alpha_local<<std::endl;
+
                 // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
                 if (alpha_local >= 0.6) {
+                    std::cout<<"\nVOU MATAR A VIAGEM: Aljpha local = "<<alpha_local<<std::endl;
                     solucao.push_back(no_ref.id);
+                    no_ref.visitado = true;
+                    nos[no_ref.id].visitado = true;
                     solucao.push_back(1);
+                    nos[1].visitado = true;
                     fim_viagem = true;
+                    continue;
                 }
             }
         } 
@@ -340,22 +371,18 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
             
             if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante) {
                 
+                std::cout<<"\nDIA: COMUM IF\n";        
+                std::cout<<"\nId escolhido em CANDIDATOS: "<<escolhido;
+                std::cout<<"\nNO DE FATO ESCOLHIDO: "<<nos[candidatos[escolhido].first].id;
+
                 // Não coloco hotéis na solução aqui 
                 solucao.push_back(no_ref.id);
-
-                int caraRemovido = no_ref.id;
-
-                if(!no_ref.is_hotel)
-                  	this->removerNo(no_ref.id);
-
-                if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
-                  std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
-                else
-                  std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+                no_ref.visitado = true;
+                nos[no_ref.id].visitado = true;
 
                 no_ref = nos[candidatos[escolhido].first];
                 tempo_restante -= pesos_arestas[escolhido];
-                
+    
             } 
 	          else {
 
@@ -365,20 +392,17 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
                 while (alpha_local < 0.6 && buscando_candidato) {
                     // Sorteia um candidato
                     escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
+                    
+                    std::cout<<"\nDIA: COMUM ELSE\n";        
+                    std::cout<<"\nId escolhido em CANDIDATOS: "<<escolhido;
+                    std::cout<<"\nNO DE FATO ESCOLHIDO: "<<nos[candidatos[escolhido].first].id;
+                    std::cout<<"\nAlpha Local: "<<alpha_local<<"\n";
 
                     if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante) {
                       
                       solucao.push_back(no_ref.id);
-
-                      int caraRemovido = no_ref.id;
-
-                      if(!no_ref.is_hotel)
-                          this->removerNo(no_ref.id);
-
-                      if(!this->verificarNoRemovidoOuArestaApontaPara(caraRemovido))
-                          std::cout<<"\nRemovi de fato tudo do "<<caraRemovido<<std::endl;
-                      else
-                        std::cout<<"\nNAO Removi de fato tudo do "<<caraRemovido<<std::endl;
+                      no_ref.visitado = true;
+                      nos[no_ref.id].visitado = true;
 
                       no_ref = nos[candidatos[escolhido].first];
                       tempo_restante -= pesos_arestas[escolhido];
@@ -394,8 +418,9 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
                 if (alpha_local >= 0.6) {
                     
                     solucao.push_back(no_ref.id);
-
-                    this->removerNo(no_ref.id);
+                    no_ref.visitado = true;
+                    nos[no_ref.id].visitado = true;
+                    
                     no_ref = this->nos[no_ref.nearest_hotel]; 
                     
                     ++dias_decorridos;
@@ -409,6 +434,13 @@ std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
         }
     }
 
+    std::cout<<"\nNIGERANDAIO SMOKEEEEE"<<std::endl;
+    std::cout<<"\n Solucao THE FINAL: \n";
+    std::cout<<"[ ";
+    for(auto elemento : solucao)
+        std::cout<<elemento<<" ";
+    std::cout<<" ]\n";
+    
     return solucao;
 
 }

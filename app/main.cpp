@@ -72,15 +72,23 @@ int main(int argc, const char* argv[])
 
         //custosIniciais.push_back(custo_solucao);
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 1; i++)
         {
             copiaGrafo = grafo;
 
             auto solucao = copiaGrafo.geraSolucao(0.05, cyberpunk);
+            
+            std::cout<<"\n Solucao QUE CHEGOU: \n";
+            std::cout<<"[ ";
+            for(auto elemento : solucao)
+            std::cout<<elemento<<" ";
+            std::cout<<" ]\n";
 
             custosIniciais.push_back(grafo.calculaCusto(solucao));
-
+            
+            std::cout<<"\n\nVou chamar VNS\n";
             auto [solucaoVNS, custo_final] = VNS(grafo,grafo.quantidadeNos(),10,solucao);
+            std::cout<<"CHAMEI VNS\n";
 
             custosFinais.push_back(custo_final);
 
@@ -126,20 +134,6 @@ int main(int argc, const char* argv[])
         }
         
     } 
-
-    /*
-    Grafo teste = Grafo("../instances/SET5-15-8/100-240-15-8.ophs");
-    auto [solucao, custo_solucao] = teste.geraSolucao(0.05);
-    std::cout<<"\nCusto solucao inicial: "<<custo_solucao;
-    std::cout<<"\nSolucao inicial:\n"<<solucao[0]<<"->";
-    for(int i = 1; i<solucao.size(); i++)
-        std::cout<<solucao[i]<<"->";
-
-    auto solucaoVNS = VNS(teste,teste.quantidadeNos(),1000);
-    std::cout<<"\nSolucao FINAL:\n"<<solucao[0]<<"->";
-    for(auto& elemento : solucaoVNS)
-        std::cout<<elemento<<"->";
-    */
 
     return 0;
 
