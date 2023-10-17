@@ -10,70 +10,67 @@
 
 using namespace std;
 
-vector<int> gerarSolucao(Grafo grafo, vector<int> solution, int ids)
-{
-    bool verify = false;
-    vector<int> nova_solucao;
-    do{
-        nova_solucao = solution;
-        int no1 = Random::get(2, ids - 1);
-        int no2 = Random::get(2, ids - 1);
+vector<vector<int>> transformaTrip(Grafo grafo, vector<int> solution){
+    cout << "entrou no transforma" << endl;
+    vector<vector<int>> trips;
+    int dias_percorridos = 0;
+    int tam_trip = grafo.tamanhoTrip();
 
-        int no3 = Random::get(1, solution.size() - 2);
-        int no4 = Random::get(1, solution.size() - 2);
-
-        nova_solucao[no3] = no1;
-        nova_solucao[no4] = no2;
+    // Inicializando os vetores internos
+    for (int i = 0; i < tam_trip; i++) {
+        vector<int> trip;
+        trips.push_back(trip);
     }
-    while(!grafo.validarSolucao(nova_solucao));
+
+    trips[0].push_back(solution[0]);
+    for(int i = 1; i < solution.size()-1; i++){
+        if(grafo.noHotel(solution[i])){
+            trips[dias_percorridos].push_back(solution[i]);
+            dias_percorridos++;
+        }
+        trips[dias_percorridos].push_back(solution[i]);
+    }
+    trips[dias_percorridos].push_back(solution[solution.size()-1]); // Adiciona o último elemento
+
+    cout << "saiu do transforma" << endl;
+    return trips;
+}
+
+vector<int> transformaSolucao( vector<vector<int>> trips){
+    vector<int> solucao;
+
+    for(int i = 0; i  < trips.size() ; i++){
+        for(int j = 0; j < trips[i].size(); j++){
+            solucao.push_back(trips[i][j]);
+        }
+    }
+
+    return solucao;
+}
+
+vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
+{
+
+    bool verify = false;
+    vector<vector<int>> novas_trips;
+    vector<int> nova_solucao;
+    int no;
+    int notrip;
+    // do{
+        novas_trips = trips;
+        for(int i = 0; i < trips.size(); i++){
+            no = Random::get(2, ids - 1);
+            notrip = Random::get(1, trips[i].size() - 2);
+            novas_trips[i][notrip] = no; 
+        }
+        nova_solucao = transformaSolucao(novas_trips);
+        
+    // }
+    // while(!grafo.validarSolucao(nova_solucao));
 
     return nova_solucao;
 }
 
-// Function to perform a VND move
-// void performVNDMove(Grafo grafo, int ids, vector<int> &solution)
-// {
-//     int melhor_custo = grafo.calculaCusto(solution);
-//     vector<int> melhor_solucao = solution;
-//     vector<int> nova_solucao;
-
-//     for (int i = 0; i < 20; i++)
-//     {
-
-//         nova_solucao = gerarSolucao(grafo, solution, ids);
-//         int custo_atual = grafo.calculaCusto(solution);
-//         if (custo_atual < melhor_custo)
-//         {
-//             melhor_custo = custo_atual;
-//             melhor_solucao = nova_solucao;
-//         }
-//     }
-
-//     solution = melhor_solucao;
-// }
-
-// Function to perform a VNS move
-void performVNSMove(Grafo grafo, int ids, vector<int> &solution)
-{
-    int melhor_custo = grafo.calculaCusto(solution);
-    vector<int> melhor_solucao = solution;
-    vector<int> nova_solucao;
-
-    for (int i = 0; i < 20; i++)
-    {
-
-        nova_solucao = gerarSolucao(grafo, solution, ids);
-        int custo_atual = grafo.calculaCusto(solution);
-
-        if (custo_atual < melhor_custo)
-        {
-            melhor_custo = custo_atual;
-            melhor_solucao = nova_solucao;
-        }
-    }
-
-    solution = melhor_solucao;
-}
 
 // Function to implement the VNS algorithm
 pair<vector<int>, int> VNS(Grafo grafo, int ids, int maxIterations, vector<int> solution)
@@ -86,7 +83,11 @@ pair<vector<int>, int> VNS(Grafo grafo, int ids, int maxIterations, vector<int> 
     int interacao = 0;
     vector<int> melhor_solucao = solution;
     int melhor_custo = grafo.calculaCusto(solution);
-
+    vector<vector<int>> trips = transformaTrip(grafo, solution);
+    // cout << "quantas trips->" << resultado.size();
+    //  for(int i = 0; i < resultado.size(); i++){
+    //      cout << "trip" << i << ": " << resultado[i].size() << endl;
+    //  }
     while (interacao <= maxIterations)
     {
         k = 1;
@@ -94,7 +95,8 @@ pair<vector<int>, int> VNS(Grafo grafo, int ids, int maxIterations, vector<int> 
         {
             
             vector<int> nova_solucao;
-            nova_solucao = gerarSolucao(grafo, melhor_solucao, ids);
+            nova_solucao = gerarSolucao(grafo, trips, ids);
+            trips = transformaTrip(grafo,nova_solucao);
             int custo_atual = grafo.calculaCusto(nova_solucao);
 
             if (custo_atual > melhor_custo)
@@ -116,4 +118,5 @@ pair<vector<int>, int> VNS(Grafo grafo, int ids, int maxIterations, vector<int> 
         cout << "->" << val;
     }
     return make_pair(melhor_solucao, custo);
+    //return make_pair(melhor_solucao,1);
 }

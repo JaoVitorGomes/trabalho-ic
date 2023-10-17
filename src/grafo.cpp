@@ -687,3 +687,11 @@ int Grafo::quantidadeNos(){
 
 }
 
+bool Grafo::noHotel(int id){
+  Vertice no = this->no(id);
+  return no.is_hotel;
+}
+
+int Grafo::tamanhoTrip(){
+  return this->tam_trip;
+}

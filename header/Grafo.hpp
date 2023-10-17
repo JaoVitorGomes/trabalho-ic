@@ -27,6 +27,8 @@ public:
   bool validarSolucao(std::vector<int> solucao);
   int calculaCusto(std::vector<int> solucao);
   int quantidadeNos();
+  bool noHotel(int id);
+  int tamanhoTrip();
   std::unordered_map<int, Vertice> copiarNos() {
     return nos;
   }
