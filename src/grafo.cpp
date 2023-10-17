@@ -27,7 +27,7 @@ Grafo::Grafo(std::string filename){
     std::string line, linha1,linha2,linha3;
 
     int num_vertices, num_hoteis_extras, numero_dias;
-    std::vector<std::pair<int, int>> coordenadas_nos;
+    std::vector<std::pair<float, float>> coordenadas_nos;
     std::vector<int> pesos;
 
     // Pega: número de vértice + 2, número de hoteis extra, número de trips = número de dias
@@ -138,30 +138,27 @@ void Grafo::adicionarNo(int id, Vertice vertice)
 
 void Grafo::acha_hotel_mais_perto(Vertice& no){
 
-  std::vector<std::pair<int, std::vector<int>>> situacao_hoteis;
+  std::vector<std::pair<int, float>> custos_hoteis;
   for(auto hotel : this->ids_hoteis){
-    auto [custo, caminho_hotel] = this->dijkstra(no.id, hotel);
-    situacao_hoteis.push_back(std::make_pair(custo, caminho_hotel));
+    auto custo = std::sqrt( std::pow((no.coord.first - nos[hotel].coord.first), 2) + std::pow((no.coord.second - nos[hotel].coord.second), 2) );
+    custos_hoteis.push_back(std::make_pair(hotel, custo));
   }
-
-  // Ordeno situacao_hoteis com base no custo em ordem crescente
-  std::sort(situacao_hoteis.begin(), situacao_hoteis.end(),
-            [](const std::pair<int, std::vector<int>>& a, const std::pair<int, std::vector<int>>& b) {
-                return a.first < b.first;
-            });
-
-  no.cost_nearest_hotel = situacao_hoteis[0].first;
-  no.path_nearest_hotel = situacao_hoteis[0].second;
-
+  // Ordeno custos_hoteis com base no custo em ordem crescente
+  int nearest = custos_hoteis[0].first;
+  float menor_custo = custos_hoteis[1].second;
+  for(auto [id, custo] : custos_hoteis)
+    if(menor_custo>custo){
+      nearest = id;
+      menor_custo = custo;
+    }
+  no.nearest_hotel = nearest;
+  no.cost_nearest_hotel;
 
 }
 
 void Grafo::acha_caminho_mais_proximo_final_hotel(Vertice& no){
-  
-  auto [custo, caminho] = this->dijkstra(no.id, this->comeco_fim.second);
 
-  no.cost_last_destiny = custo;
-  no.path_to_last_destiny = caminho;
+    no.cost_last_destiny = std::sqrt( std::pow((no.coord.first - nos[1].coord.first), 2) + std::pow((no.coord.second - nos[1].coord.second), 2) );
 
 }
 void Grafo::printa_arestas() {
@@ -207,8 +204,6 @@ bool Grafo::removerNo(int id) {
     return true;
 }
 
-
-
 void Grafo::removerAresta(int origem, int destino)
 {
   auto noOrigem = nos.find(origem);
@@ -231,118 +226,18 @@ Vertice& Grafo::no(int id){
   return nos.at(id);
 }
 
-std::pair<int, std::vector<int>> Grafo::dijkstra(int origem, int destino) {
-    int ordem = nos.size();
-    auto noOrigem = nos.find(origem);
-    auto noDestino = nos.find(destino);
-    if (ordem <= 1)
-        return std::make_pair(0, std::vector<int>());
-
-    //Vertice& noOrigem = noOrigem->second;
-    //Vertice& noDestino = noDestino->second;
-
-    std::unordered_map<int, int> distancias;
-    std::unordered_map<int, int> antecessores;
-
-    for (const auto& par : nos) {
-        distancias[par.first] = std::numeric_limits<int>::max();
-        antecessores[par.first] = -1; // Inicialmente não possui antecessor.
-    }
-
-    distancias[origem] = 0;
-
-    std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> fila;
-
-    fila.push(std::make_pair(0, origem));
-
-    while (!fila.empty()) {
-        int distanciaAtual = fila.top().first;
-        int idAtual = fila.top().second;
-        fila.pop();
-
-        if (idAtual == destino) {
-            break;
-        }
-
-        Vertice& noAtual = nos[idAtual];
-
-        for (const auto& aresta : noAtual.arestas) {
-            int idAdjacente = aresta.id;
-            int pesoAteAdjacente = aresta.peso;
-            Vertice& noAdjacente = nos[idAdjacente];
-
-            int novaDistancia = distanciaAtual + pesoAteAdjacente;
-
-            if (novaDistancia < distancias[idAdjacente]) {
-                distancias[idAdjacente] = novaDistancia;
-                antecessores[idAdjacente] = idAtual;
-                fila.push(std::make_pair(novaDistancia, idAdjacente));
-            }
-        }
-    }
-
-    // Construir o vetor do caminho mínimo a partir dos antecessores
-    std::vector<int> caminho;
-    int noAtual = destino;
-    while (noAtual != -1) {
-        caminho.push_back(noAtual);
-        noAtual = antecessores[noAtual];
-    }
-
-    // Inverter o vetor, já que a construção começa pelo destino
-    std::reverse(caminho.begin(), caminho.end());
-
-    int custoCaminho = distancias[destino];
-
-    return std::make_pair(custoCaminho, caminho);
-}
-
-void Grafo::encerra_viagem(std::vector<int>& solucao, Vertice& no_ref){
-  
-  for(int i = 0;  i<no_ref.path_to_last_destiny.size(); i++){
-      solucao.push_back(no_ref.path_to_last_destiny[i]);
-      this->nos[no_ref.path_to_last_destiny[i]].visitado = true;
-      
-      if(!(i==no_ref.path_to_last_destiny.size() - 1))
-        this->removerNo(this->nos[no_ref.path_to_last_destiny[i]].id);
-  }     
-}
-
-void Grafo::encerra_dia(std::vector<int>& solucao, Vertice& no_ref){
-    for(int i = 0;  i<no_ref.path_nearest_hotel.size(); i++){
-      solucao.push_back(no_ref.path_nearest_hotel[i]);
-      this->nos[no_ref.path_nearest_hotel[i]].visitado = true;
-      
-      if(!(i==no_ref.path_nearest_hotel.size() - 1))
-        this->removerNo(this->nos[no_ref.path_nearest_hotel[i]].id);
-
-    }
-}
-
- void Grafo::recalcula_tudo(){
-
-  // Preenche a distância mais próxima até um hotel
-    for(auto& elemento : this->nos)
-      this->acha_hotel_mais_perto(elemento.second);
-    
-    // Preenche a distância mais próxima até o destino final
-    for(auto& elemento : this->nos)
-      this->acha_caminho_mais_proximo_final_hotel(elemento.second);
-
- }
-
-std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
-
-    auto nos_local = this->copiarNos();
+std::vector<int> Grafo::geraSolucao(float alpha, int instancia){
     
     // Inicializações
-    int origem = this->comeco_fim.first;
-    int destino_final = this->comeco_fim.second;
     std::vector<int> solucao;
     std::vector<std::pair<int, float>> candidatos;
     std::vector<float> pesos_arestas;
+
+    int origem = this->comeco_fim.first;
+    int destino_final = this->comeco_fim.second;
     bool fim_viagem = false;
     int dias_decorridos = 0;
+
     float tempo_restante = this->tempos_limites_dias[dias_decorridos];
     Vertice no_ref = nos[origem];
 
@@ -380,11 +275,12 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
         if (dias_decorridos + 1 == this->tam_trip) {
 
             // Candidato válido
-            if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel){
-                if(!no_ref.is_hotel)
-		              solucao.push_back(no_ref.id);
-                nos_local[no_ref.id].visitado = true;
+            if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante){
+                
+		            solucao.push_back(no_ref.id);
+
                 int caraRemovido = no_ref.id;
+
                 if(!no_ref.is_hotel)
                   this->removerNo(no_ref.id);
 
@@ -395,7 +291,7 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
                 no_ref = nos[candidatos[escolhido].first];
                 tempo_restante -= pesos_arestas[escolhido];
-                this->recalcula_tudo();
+
             } 
             else {
                 // Se não achar algum candidato de primeira
@@ -405,11 +301,12 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
                     // Sorteia um candidato
                     escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
-                    if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
-                        if(!no_ref.is_hotel)
-                          solucao.push_back(no_ref.id);
-                        nos_local[no_ref.id].visitado = true;
+                    if (nos[candidatos[escolhido].first].cost_last_destiny + pesos_arestas[escolhido] <= tempo_restante) {
+                        
+                        solucao.push_back(no_ref.id);
+
                         int caraRemovido = no_ref.id;
+
                         if(!no_ref.is_hotel)
                             this->removerNo(no_ref.id);
 
@@ -420,10 +317,11 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
                         no_ref = nos[candidatos[escolhido].first];
                         tempo_restante -= pesos_arestas[escolhido];
-                        this->recalcula_tudo();
+                        
                         buscando_candidato = false;
 
                     } 
+                    // Aumenta escopo
 		                else 
                       alpha_local += 0.05;
                     
@@ -431,19 +329,22 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
                 // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
                 if (alpha_local >= 0.6) {
-                    encerra_viagem(solucao, no_ref);
+                    solucao.push_back(no_ref.id);
+                    solucao.push_back(1);
                     fim_viagem = true;
                 }
             }
         } 
+        // NÃO É O ÚLTIMO DIA
         else {
-            // Não está no último dia
-            // Candidato válido
-            if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
-                if(!no_ref.is_hotel)
-                  solucao.push_back(no_ref.id);
-                nos_local[no_ref.id].visitado = true;
+            
+            if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante) {
+                
+                // Não coloco hotéis na solução aqui 
+                solucao.push_back(no_ref.id);
+
                 int caraRemovido = no_ref.id;
+
                 if(!no_ref.is_hotel)
                   	this->removerNo(no_ref.id);
 
@@ -454,7 +355,7 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
                 no_ref = nos[candidatos[escolhido].first];
                 tempo_restante -= pesos_arestas[escolhido];
-                this->recalcula_tudo();
+                
             } 
 	          else {
 
@@ -465,11 +366,12 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
                     // Sorteia um candidato
                     escolhido = Random::get(0, static_cast<int>(std::ceil(alpha_local * candidatos.size()) - 1));
 
-                    if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante && !nos[candidatos[escolhido].first].is_hotel) {
-                      if(!no_ref.is_hotel)
-                        solucao.push_back(no_ref.id);
-                      nos_local[no_ref.id].visitado = true;
+                    if (nos[candidatos[escolhido].first].cost_nearest_hotel + pesos_arestas[escolhido] <= tempo_restante) {
+                      
+                      solucao.push_back(no_ref.id);
+
                       int caraRemovido = no_ref.id;
+
                       if(!no_ref.is_hotel)
                           this->removerNo(no_ref.id);
 
@@ -480,7 +382,7 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
                       no_ref = nos[candidatos[escolhido].first];
                       tempo_restante -= pesos_arestas[escolhido];
-                      this->recalcula_tudo();
+                      
                       buscando_candidato = false;
 
                     } 
@@ -490,23 +392,24 @@ std::pair<std::vector<int>, int> Grafo::geraSolucao(float alpha){
 
                 // Se mesmo aumentando tanto assim o escopo não achar ninguém, encerra o dia
                 if (alpha_local >= 0.6) {
-                    encerra_dia(solucao, no_ref);
-                    //this->removerNo(no_ref.id);
-                    std::cout<<"\nMudei de DIA\n";
-                    no_ref = this->nos[solucao.at(solucao.size()-1)];
+                    
+                    solucao.push_back(no_ref.id);
+
+                    this->removerNo(no_ref.id);
+                    no_ref = this->nos[no_ref.nearest_hotel]; 
+                    
                     ++dias_decorridos;
                     tempo_restante = this->tempos_limites_dias[dias_decorridos];
+
+                    std::cout<<"\nMudei de DIA\n";
+                    std::cout<<"\nInstancia: "<<instancia;
                     
                 }
             }
         }
     }
 
-    int pontuacao_solucao = 0;
-    this->nos = nos_local;
-    for (auto& elemento : solucao)
-        pontuacao_solucao += this->nos[elemento].peso;
-    return std::make_pair(solucao, pontuacao_solucao);
+    return solucao;
 
 }
 
@@ -527,7 +430,7 @@ bool Grafo::verificarNoRemovidoOuArestaApontaPara(int id) {
     return false;
 }
 
-
+/*
 std::pair<std::vector<int>, int> Grafo::geraSolucaoZetsubou(){
 
     auto nos_local = this->copiarNos();
@@ -688,7 +591,7 @@ std::pair<std::vector<int>, int> Grafo::geraSolucaoZetsubou(){
  
     return std::make_pair(solucao, pontuacao_solucao);
 }
-
+*/
 bool Grafo::validarSolucao(std::vector<int> solucao){
   int contador_dias = 0;
   std::vector<float> pesos_arestas;

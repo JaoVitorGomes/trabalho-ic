@@ -19,14 +19,10 @@ public:
   void acha_hotel_mais_perto(Vertice& no);
   void acha_caminho_mais_proximo_final_hotel(Vertice& no);
   bool verificarNoRemovidoOuArestaApontaPara(int id);
-  Vertice& no(int id);                 
-  void encerra_viagem(std::vector<int>& solucao, Vertice& no_ref);                                 // c
-  std::pair<int, std::vector<int>> dijkstra(int origem, int destino);                      // m
-  std::pair<std::vector<int>, int> geraSolucao(float alpha);
-    std::pair<std::vector<int>, int> geraSolucaoZetsubou();
-  void encerra_dia(std::vector<int>& solucao, Vertice& no_ref);
+  Vertice& no(int id);                                      // m
+  std::vector<int> geraSolucao(float alpha, int instancia);
+  std::pair<std::vector<int>, int> geraSolucaoZetsubou();
   void resolveProblema_do_Hotel(std::vector<int> destinos_obrigatorios); 
-  void recalcula_tudo();
   void printa_arestas();   
   bool validarSolucao(std::vector<int> solucao);
   int calculaCusto(std::vector<int> solucao);

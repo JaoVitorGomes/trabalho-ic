@@ -16,10 +16,9 @@ struct Vertice{
     int peso;
     std::forward_list<Aresta> arestas{};
     bool is_hotel = false;
-    std::vector<int> path_nearest_hotel;
-    int cost_nearest_hotel;
-    std::vector<int> path_to_last_destiny;
-    int cost_last_destiny;
+    float cost_nearest_hotel;
+    float cost_last_destiny;
+    int nearest_hotel;
     std::pair<float,float> coord;
 };
 

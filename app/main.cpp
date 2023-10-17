@@ -59,28 +59,34 @@ int main(int argc, const char* argv[])
     instancias.push_back("../instances/SET5-12-4/100-50-12-4.ophs"); 
     instancias.push_back("../instances/SET5-12-4/100-130-12-4.ophs");
     
+    int cyberpunk = 1;
     int set = 1;
     int id_instancia = 1;
     std::vector<int> custosIniciais, custosFinais;
     for(auto instancia : instancias){
 
         Grafo grafo = Grafo(instancia);
+        Grafo copiaGrafo = grafo;
 
         //auto [solucao, custo_solucao] = grafo.geraSolucaoZetsubou();
 
         //custosIniciais.push_back(custo_solucao);
 
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 10; i++)
         {
-            auto [solucao, custo_solucao] = grafo.geraSolucao(0.05);
+            copiaGrafo = grafo;
 
-            custosIniciais.push_back(custo_solucao);
+            auto solucao = copiaGrafo.geraSolucao(0.05, cyberpunk);
+
+            custosIniciais.push_back(grafo.calculaCusto(solucao));
 
             auto [solucaoVNS, custo_final] = VNS(grafo,grafo.quantidadeNos(),10,solucao);
 
             custosFinais.push_back(custo_final);
 
         }
+
+        cyberpunk++;
 
         // Abra o arquivo para escrita
         std::ofstream arquivo("../outputs/SET" + std::to_string(set) + "instancia" + std::to_string(id_instancia) + ".txt");
