@@ -29,6 +29,7 @@ public:
   int quantidadeNos();
   bool noHotel(int id);
   int tamanhoTrip();
+  int calculaCustoTempo(std::vector<int> solucao);
   std::unordered_map<int, Vertice> copiarNos() {
     return nos;
   }

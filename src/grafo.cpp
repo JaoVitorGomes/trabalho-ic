@@ -695,3 +695,19 @@ bool Grafo::noHotel(int id){
 int Grafo::tamanhoTrip(){
   return this->tam_trip;
 }
+
+int Grafo::calculaCustoTempo(std::vector<int> solucao){
+
+  int valor_solucao = 0;
+
+    for(int i = 0; i < solucao.size()-2; i++){
+
+    for (auto& [id_vizinho, peso_aresta] : this->nos[solucao[i]].arestas)
+      if(id_vizinho == solucao[i+1]){
+        valor_solucao = valor_solucao + peso_aresta;
+        break;
+    }
+}
+
+return valor_solucao;
+}
