@@ -143,6 +143,7 @@ vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
     vector<int> nova_solucao;
     int no;
     int notrip;
+    int counter = 0;
     do{
     novas_trips = trips;
     cout << "tamanho trip" << trips.size() << endl;
@@ -175,10 +176,10 @@ vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
             novas_trips[i][notrip] = no;
     }
     }
-
+    counter++;
     nova_solucao = transformaSolucao(grafo, novas_trips);
     cout << grafo.validarSolucao(nova_solucao) << endl;
-}while(!grafo.validarSolucao(nova_solucao));
+}while(!grafo.validarSolucao(nova_solucao) && counter < 10);
     cout << "----------------->depoid do while <-------------------------------" << endl;
     return nova_solucao;
 }
