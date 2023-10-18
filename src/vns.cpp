@@ -28,9 +28,9 @@ bool adicionarNoComRestricao(Grafo grafo, vector<int> &trip, int idNo1, int idNo
     float tempo_caminho = 0;
 
         if((limite_caminho - valor_caminho) > 0){
-            tempo_caminho = ((limite_caminho - valor_caminho);
-                if((tempo_caminho - grafo.tempo1no(idNo1,novono, idNo2)) >= 0){
-                    trip.insert(idNo1,novono);
+            tempo_caminho = ((limite_caminho - valor_caminho));
+                if((tempo_caminho - grafo.tempo1no(idNo1,novoNo, idNo2)) >= 0){
+                    trip.insert(trip.begin() + idNo1,novoNo);
                 }
 
         }
@@ -143,47 +143,42 @@ vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
     vector<int> nova_solucao;
     int no;
     int notrip;
-    
+    do{
     novas_trips = trips;
-
+    cout << "tamanho trip" << trips.size() << endl;
     for (int i = 0; i < trips.size(); i++) {
         do {
             no = Random::get(2, ids - 1);
         } while (grafo.noHotel(no));
-
+        cout << "tamanho trip "<< trips[i].size() << endl;
         if (trips[i].size() < 3) {
-            if (i == trips.size()) {
-                trips.clear();
-            } else {
-                if (trips[i].size() != 0) {
-                    trips[i].clear();
-                    for (auto &tri : trips[i + 1]) {
-                        trips[i].push_back(tri);
-                    }
-                }
+            cout << "é menor q 3" << endl;
+            if(trips[i].size() == 0){
+                trips.erase(trips.begin() + i);
+
             }
         } else {
-            notrip = Random::get(1, trips[i].size() - 1);
+            notrip = Random::get(1, trips[i].size() - 2);
 
-            bool valor = adicionarNoComRestricao(grafo, trips[i],)
-            vector<int> used;
-            for (auto &num : novas_trips[i]) {
-                if (num != no && find(used.begin(), used.end(), num) == used.end()) {
-                    used.push_back(num);
-                } else {
-                    while (find(used.begin(), used.end(), no) != used.end()) {
-                        no = Random::get(2, ids - 1);
-                    }
-                    used.push_back(no);
-                }
-            }
+  //          //bool valor = adicionarNoComRestricao(grafo, trips[i],)
+  //          vector<int> used;
+ //           for (auto &num : novas_trips[i]) {
+ //               if (num != no && find(used.begin(), used.end(), num) == used.end()) {
+ //                   used.push_back(num);
+ //               } else {
+ //                   while (find(used.begin(), used.end(), no) != used.end()) {
+ //                       no = Random::get(2, ids - 1);
+ //                   }
+ //                   used.push_back(no);
+ //               }
+ //           }
             novas_trips[i][notrip] = no;
-        }
+    }
     }
 
     nova_solucao = transformaSolucao(grafo, novas_trips);
     cout << grafo.validarSolucao(nova_solucao) << endl;
-
+}while(!grafo.validarSolucao(nova_solucao));
     cout << "----------------->depoid do while <-------------------------------" << endl;
     return nova_solucao;
 }
