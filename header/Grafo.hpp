@@ -30,6 +30,7 @@ public:
   bool noHotel(int id);
   int tamanhoTrip();
   float calculaCustoTempo(std::vector<int> solucao);
+  float tempoDia(int dia);
   std::unordered_map<int, Vertice> copiarNos() {
     return nos;
   }

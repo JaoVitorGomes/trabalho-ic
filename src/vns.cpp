@@ -10,6 +10,33 @@
 
 using namespace std;
 
+
+void adicionarNoComRestricao(Grafo grafo, vector<int> &trip, int idNo1, int idNo2, int novoNo, int dia) {
+    // Verifica se os nós fornecidos estão presentes na viagem
+    auto it1 = find(trip.begin(), trip.end(), idNo1);
+    auto it2 = find(trip.begin(), trip.end(), idNo2);
+
+    // Se ambos os nós estiverem presentes na viagem, adiciona o novo nó
+    if (it1 != trip.end() && it2 != trip.end()) {
+        // Encontra a posição dos nós na viagem
+        auto pos1 = distance(trip.begin(), it1);
+        auto pos2 = distance(trip.begin(), it2);
+
+    float valor_caminho = grafo.calculaCustoTempo(trip);
+    float limite_caminho;
+        // Verifica se a adição do novo nó respeita a restrição das arestas
+        if (abs(pos1 - pos2) == 1) {
+            // Adiciona o novo nó no local adequado entre os dois nós existentes
+            trip.insert(trip.begin() + max(pos1, pos2), novoNo);
+        } else {
+            cout << "A adição do novo nó não respeita a restrição das arestas." << endl;
+        }
+    } else {
+        // Caso um ou ambos os nós não estejam presentes na viagem
+        cout << "Um ou ambos os nós não estão presentes na viagem." << endl;
+    }
+}
+
 vector<vector<int>> transformaTrip(Grafo grafo, vector<int> solution){
     cout << "entrou no transforma" << endl;
     vector<vector<int>> trips;
@@ -61,19 +88,21 @@ vector<vector<int>> transformaTrip(Grafo grafo, vector<int> solution){
     return trips;
 }
 
-vector<int> transformaSolucao( Grafo grafo,vector<vector<int>> trips){
+vector<int> transformaSolucao(Grafo grafo, vector<vector<int>> trips) {
     vector<int> solucao;
 
-    for(int i = 0; i  < trips.size() ; i++){
-        for(int j = 0; j < trips[i].size(); j++){
-            if((j != (trips[i].size()-1) &&grafo.noHotel(trips[i][j]) && grafo.noHotel(trips[i][j+1]))){
-            cout << "invalido" << endl;
-        }else{
-            solucao.push_back(trips[i][j]);
+    for (int i = 0; i < trips.size(); i++) {
+        for (int j = 0; j < trips[i].size(); j++) {
+            if (j < trips[i].size() - 1 && grafo.noHotel(trips[i][j]) && grafo.noHotel(trips[i][j + 1])) {
+                cout << "invalido" << endl;  // Mensagem de aviso para uma situação inválida
+            } else {
+                if (find(solucao.begin(), solucao.end(), trips[i][j]) == solucao.end()) {
+                    solucao.push_back(trips[i][j]);  // Adiciona o elemento ao vetor de solução se não estiver presente
+                }
+            }
         }
     }
 
-}
     return solucao;
 }
 
@@ -109,49 +138,51 @@ vector<int> twoOptLocalSearch(Grafo grafo, vector<int> solution) {
 
 vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
 {
-
     bool verify = false;
     vector<vector<int>> novas_trips;
     vector<int> nova_solucao;
     int no;
     int notrip;
-     //do{
-        novas_trips = trips;
-        //cout << "antes do for" << endl;
-        for(int i = 0; i < trips.size(); i++){
-            do{
-                no = Random::get(2, ids - 1);
-            }while(grafo.noHotel(no));
-            
-            //cout << "passou do 1" << endl;
-            //cout << "trip size" << trips[i].size() << endl;
-            if(trips[i].size() < 3){
-                if(i == trips.size()){
-                    //trips.clear();
-                }else{
-                    if(trips[i].size() != 0){
-                        trips[i].clear();
-                        for(auto& tri : trips[i+1]){
-                            trips[i].push_back(tri);
-                        }
+    
+    novas_trips = trips;
+
+    for (int i = 0; i < trips.size(); i++) {
+        do {
+            no = Random::get(2, ids - 1);
+        } while (grafo.noHotel(no));
+
+        if (trips[i].size() < 3) {
+            if (i == trips.size()) {
+                trips.clear();
+            } else {
+                if (trips[i].size() != 0) {
+                    trips[i].clear();
+                    for (auto &tri : trips[i + 1]) {
+                        trips[i].push_back(tri);
                     }
-
                 }
-            }else{
-                notrip = Random::get(1, trips[i].size() - 2);
-                for(auto& tr : novas_trips[i]){
-                    //cout << "valor:" << tr << endl;
-                }
-                novas_trips[i][notrip] = no; 
             }
-
+        } else {
+            notrip = Random::get(1, trips[i].size() - 2);
+            vector<int> used;
+            for (auto &num : novas_trips[i]) {
+                if (num != no && find(used.begin(), used.end(), num) == used.end()) {
+                    used.push_back(num);
+                } else {
+                    while (find(used.begin(), used.end(), no) != used.end()) {
+                        no = Random::get(2, ids - 1);
+                    }
+                    used.push_back(no);
+                }
+            }
+            novas_trips[i][notrip] = no;
         }
-        //cout << "depois do for" << endl;
-        nova_solucao = transformaSolucao(grafo,novas_trips);
-        cout << grafo.validarSolucao(nova_solucao) << endl;  
-     //}
-     //while(!grafo.validarSolucao(nova_solucao));
-     cout << "----------------->depoid do while <-------------------------------" << endl;
+    }
+
+    nova_solucao = transformaSolucao(grafo, novas_trips);
+    cout << grafo.validarSolucao(nova_solucao) << endl;
+
+    cout << "----------------->depoid do while <-------------------------------" << endl;
     return nova_solucao;
 }
 

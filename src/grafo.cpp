@@ -742,3 +742,8 @@ return soma;
 return 0;
 //return valor_solucao;
 }
+
+float Grafo::tempoDia(int dia){
+return 1.1;
+
+}
