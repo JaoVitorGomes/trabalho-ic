@@ -696,18 +696,49 @@ int Grafo::tamanhoTrip(){
   return this->tam_trip;
 }
 
-int Grafo::calculaCustoTempo(std::vector<int> solucao){
+float Grafo::calculaCustoTempo(std::vector<int> solucao){
+if(solucao.size() >= 2){
+  int contador_dias = 0;
+  std::vector<float> pesos_arestas;
 
-  int valor_solucao = 0;
-
-    for(int i = 0; i < solucao.size()-2; i++){
+  // Preenche a lista de candidatos
+  
+  for (auto& [id_vizinho, peso_aresta] : this->nos[solucao[0]].arestas)
+      if(id_vizinho == solucao[1]){
+        pesos_arestas.push_back(peso_aresta);
+        break;
+      }
+      
+    
+//std::cout << "-->1" << std::endl;
+  for(int i = 1; i < solucao.size()-2; i++){
 
     for (auto& [id_vizinho, peso_aresta] : this->nos[solucao[i]].arestas)
       if(id_vizinho == solucao[i+1]){
-        valor_solucao = valor_solucao + peso_aresta;
+        pesos_arestas.push_back(peso_aresta);
         break;
     }
-}
 
-return valor_solucao;
+    float soma_parcial = 0;
+    for(auto& peso : pesos_arestas)
+      soma_parcial+=peso;
+
+    if(soma_parcial > this->tempos_limites_dias[contador_dias]){
+      return false;
+    }
+    
+
+  }
+
+    float soma = 0;
+    for(auto& peso :pesos_arestas){
+        soma = soma+peso;
+        //std::cout <<" valor das arestas: " << peso << std::endl; 
+    }
+    //std::cout << "valor da soma:" << soma << std::endl;
+
+return soma;
+}
+return 0;
+//return valor_solucao;
 }

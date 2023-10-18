@@ -29,14 +29,25 @@ vector<vector<int>> transformaTrip(Grafo grafo, vector<int> solution){
     }
     cout << "depois da init" << endl;
     trips[0].push_back(solution[0]);
-    cout << "depois do 0" << endl;
+    cout << "depois do 0" << endl; 
+
+    vector<int> new_solution;
+    new_solution.push_back(0);
+
+    for(auto& test : solution){
+        if(test > 0){
+            new_solution.push_back(test);
+        }
+    }
+
+    solution = new_solution;
 
     for(auto& sol : solution){
         cout << sol << "->";
     }
     cout << "tamanho do tour->" << solution.size() << endl;
     for(int i = 1; i < solution.size()-1; i++){
-        cout << "i->" << i << endl;
+        //cout << "i->" << i << endl;
         if(grafo.noHotel(solution[i])){
             trips[dias_percorridos].push_back(solution[i]);
             dias_percorridos++;
@@ -50,27 +61,37 @@ vector<vector<int>> transformaTrip(Grafo grafo, vector<int> solution){
     return trips;
 }
 
-vector<int> transformaSolucao( vector<vector<int>> trips){
+vector<int> transformaSolucao( Grafo grafo,vector<vector<int>> trips){
     vector<int> solucao;
 
     for(int i = 0; i  < trips.size() ; i++){
         for(int j = 0; j < trips[i].size(); j++){
+            if((j != (trips[i].size()-1) &&grafo.noHotel(trips[i][j]) && grafo.noHotel(trips[i][j+1]))){
+            cout << "invalido" << endl;
+        }else{
             solucao.push_back(trips[i][j]);
         }
     }
 
+}
     return solucao;
 }
 
 vector<int> twoOptLocalSearch(Grafo grafo, vector<int> solution) {
+    //cout << "entrou no 2-opt" << endl;
 
 
-
-        cout << "antes do calcula tempo" << endl;
+      //  cout << "antes do calcula tempo" << endl;
         int best_cost = grafo.calculaCustoTempo(solution);
-        cout << "depois do calcula tempo" << endl;
+        //cout << "depois do calcula tempo" << endl;
+        //cout << "valor do solution:" << solution.size() << endl;
+        if(solution.size() == 0){
+            return solution;
+        }
+
         for (int i = 1; i < solution.size() - 1; i++) {
             for (int j = i + 1; j < solution.size(); j++) {
+                //cout <<"valor de i e j" << i << " -> " << j << endl; 
                 vector<int> new_solution = solution;
                 reverse(new_solution.begin() + i, new_solution.begin() + j); // Inverte o trecho entre i e j
                 int new_cost = grafo.calculaCustoTempo(new_solution);
@@ -81,6 +102,7 @@ vector<int> twoOptLocalSearch(Grafo grafo, vector<int> solution) {
                 }
             }
         }
+        //cout << "saiu do 2-opt" << endl;
     
     return solution;
 }
@@ -93,16 +115,16 @@ vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
     vector<int> nova_solucao;
     int no;
     int notrip;
-     do{
+     //do{
         novas_trips = trips;
-        cout << "antes do for" << endl;
+        //cout << "antes do for" << endl;
         for(int i = 0; i < trips.size(); i++){
             do{
                 no = Random::get(2, ids - 1);
             }while(grafo.noHotel(no));
             
-            cout << "passou do 1" << endl;
-            cout << "trip size" << trips[i].size() << endl;
+            //cout << "passou do 1" << endl;
+            //cout << "trip size" << trips[i].size() << endl;
             if(trips[i].size() < 3){
                 if(i == trips.size()){
                     //trips.clear();
@@ -118,17 +140,17 @@ vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
             }else{
                 notrip = Random::get(1, trips[i].size() - 2);
                 for(auto& tr : novas_trips[i]){
-                    cout << "valor:" << tr << endl;
+                    //cout << "valor:" << tr << endl;
                 }
                 novas_trips[i][notrip] = no; 
             }
 
         }
-        cout << "depois do for" << endl;
-        nova_solucao = transformaSolucao(novas_trips);
-        
-     }
-     while(!grafo.validarSolucao(nova_solucao));
+        //cout << "depois do for" << endl;
+        nova_solucao = transformaSolucao(grafo,novas_trips);
+        cout << grafo.validarSolucao(nova_solucao) << endl;  
+     //}
+     //while(!grafo.validarSolucao(nova_solucao));
      cout << "----------------->depoid do while <-------------------------------" << endl;
     return nova_solucao;
 }
