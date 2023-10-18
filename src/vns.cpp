@@ -11,30 +11,30 @@
 using namespace std;
 
 
-void adicionarNoComRestricao(Grafo grafo, vector<int> &trip, int idNo1, int idNo2, int novoNo, int dia) {
+bool adicionarNoComRestricao(Grafo grafo, vector<int> &trip, int idNo1, int idNo2,int idNo3, int novoNo, int dia) {
     // Verifica se os nós fornecidos estão presentes na viagem
     auto it1 = find(trip.begin(), trip.end(), idNo1);
     auto it2 = find(trip.begin(), trip.end(), idNo2);
 
     // Se ambos os nós estiverem presentes na viagem, adiciona o novo nó
-    if (it1 != trip.end() && it2 != trip.end()) {
         // Encontra a posição dos nós na viagem
         auto pos1 = distance(trip.begin(), it1);
         auto pos2 = distance(trip.begin(), it2);
 
     float valor_caminho = grafo.calculaCustoTempo(trip);
-    float limite_caminho;
-        // Verifica se a adição do novo nó respeita a restrição das arestas
-        if (abs(pos1 - pos2) == 1) {
-            // Adiciona o novo nó no local adequado entre os dois nós existentes
-            trip.insert(trip.begin() + max(pos1, pos2), novoNo);
-        } else {
-            cout << "A adição do novo nó não respeita a restrição das arestas." << endl;
+    float limite_caminho = grafo.tempoDia(dia);
+
+    bool verify = true;
+    float tempo_caminho = 0;
+
+        if((limite_caminho - valor_caminho) > 0){
+            tempo_caminho = ((limite_caminho - valor_caminho);
+                if((tempo_caminho - grafo.tempo1no(idNo1,novono, idNo2)) >= 0){
+                    trip.insert(idNo1,novono);
+                }
+
         }
-    } else {
-        // Caso um ou ambos os nós não estejam presentes na viagem
-        cout << "Um ou ambos os nós não estão presentes na viagem." << endl;
-    }
+
 }
 
 vector<vector<int>> transformaTrip(Grafo grafo, vector<int> solution){
@@ -163,7 +163,9 @@ vector<int> gerarSolucao(Grafo grafo, vector<vector<int>> trips, int ids)
                 }
             }
         } else {
-            notrip = Random::get(1, trips[i].size() - 2);
+            notrip = Random::get(1, trips[i].size() - 1);
+
+            bool valor = adicionarNoComRestricao(grafo, trips[i],)
             vector<int> used;
             for (auto &num : novas_trips[i]) {
                 if (num != no && find(used.begin(), used.end(), num) == used.end()) {

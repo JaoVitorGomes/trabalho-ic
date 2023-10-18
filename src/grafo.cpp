@@ -744,6 +744,26 @@ return 0;
 }
 
 float Grafo::tempoDia(int dia){
-return 1.1;
+return this->tempos_limites_dias[dia];
 
+}
+
+float tempo1no(int no1, int no2, int no3){
+
+    float tempo = 0;
+        for (auto& [id_vizinho, peso_aresta] : this->nos[no1].arestas)
+             if(id_vizinho == no2){
+            pesos_arestas.push_back(peso_aresta);
+            tempo = tempo + peso_aresta
+            break;
+    }
+
+        for (auto& [id_vizinho, peso_aresta] : this->nos[no2].arestas)
+             if(id_vizinho == no3){
+            pesos_arestas.push_back(peso_aresta);
+            tempo = tempo + peso_aresta
+            break;
+    }
+
+    return tempo;
 }

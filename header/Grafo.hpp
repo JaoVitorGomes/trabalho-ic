@@ -31,6 +31,7 @@ public:
   int tamanhoTrip();
   float calculaCustoTempo(std::vector<int> solucao);
   float tempoDia(int dia);
+  float tempo1no(int no1, int no2, int no3);
   std::unordered_map<int, Vertice> copiarNos() {
     return nos;
   }
